@@ -221,6 +221,8 @@ $resArr = $res['result'];
 
 所有的搜索语法跟ES大差不差，但更清晰简洁。对网站配置几乎没有什么要求（毕竟内存的成本还是挺高的），无需配置任何东西，导入即可使用，无需维护，能跟PHP项目完美融合。
 
+
+
 **支持自定义分词插件；**
 
 **支持精细化搜索配置；**（结果高亮、自定义返回字段、字段权重、minimum_should_match、结果按字段值排序、operator等）
@@ -233,11 +235,10 @@ $resArr = $res['result'];
 
 
 
-当然，如果你只是想为博客网站添加一个简单的模糊搜索功能，没有其它复杂的需求，你可以使用免费的 菜狗搜索： [https://github.com/rock365/caigou](https://github.com/rock365/caigou)
-
-
-
 商业需求请联系：
 
 vx：azg555666
 
+
+
+当然，如果你只是想为博客网站添加一个简单的模糊搜索功能，没有其它复杂的需求，你可以使用免费的 菜狗搜索： [https://github.com/rock365/caigou](https://github.com/rock365/caigou)
