@@ -225,7 +225,7 @@ $resArr = $res['result'];
 
 支持精细化搜索配置；
 
-
+支持生成增量索引；
 
 当然，如果你只是想为博客网站添加一个简单的模糊搜索功能，没有其它复杂的需求，你可以使用免费的 菜狗搜索： [https://github.com/rock365/caigou](https://github.com/rock365/caigou)
 
