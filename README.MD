@@ -2,13 +2,15 @@
 
 windsearch，专业的PHP全文检索解决方案，无需安装，引入即可使用。功能强大，包含多种检索模式。
 
-支持的搜索模式：
+### 多种搜索模式
 
 **match 单字段检索**
 
 **multi_match 多字段检索**
 
 **match_prefix 前缀匹配**
+
+**match_suffix 后缀匹配**
 
 **match_phrase 短语搜索**
 
