@@ -2,6 +2,13 @@
 
 windsearch，专业的PHP全文检索解决方案，使用上零心智负担，功能强大，包含多种检索模式。适合cms系统、外包工作室、配置一般的网站、需要快速搭建搜索的网站。引擎无需安装，引入即可使用，集成到PHP项目后，无需维护，一劳永逸。
 
+PHP环境要求：
+
+- PHP ≥7.3
+- mbstring Extension
+- PDO Extension
+- SQLite Extension
+
 ### 亮点介绍
 
 **操作完全接口化；**
@@ -75,33 +82,18 @@ $query = [
                 'name' => 'title',
                 'query' => $query,//搜索内容
                 'analyzer' => 'segment', // 词典分词模式 complete/not,代表整体匹配; segment 中文分词; 
-                // 'analyzer' => [ //ngram分词模式 分词长度为2个字符
-                //     'ngram' => 2,
-                //     // 'separator' => ',',//分隔符分词模式
-                // ],
                 'highlight' => [ // 结果高亮
                     'is_cut' => 'cut', // 是否将未匹配的地方截取掉
                     'fixed_length' => '', // 保留多少字符，若为空，则保持原长度
                 ],
-                // 'weight' => 1,//字段权重
-                'minimum_should_match' => '75%', //控制精度 最少应该匹配几个,值可以为整型或百分比
             ],
             [
                 'name' => 'tags',
                 'query' => '蔬菜',
                 'analyzer' => 'segment', // 分词模式 complete/not,代表不分词 整体匹配; segment 中文分词; 
-                'highlight' => [ //结果高亮
-                    'is_cut' => 'not_cut', // 是否将未匹配的地方截取掉
-                    'fixed_length' => '', // 保留多少字符，若为空，则保持原长度
-                ],
-                // 'weight' => 2,//字段权重
-                // 'minimum_should_match' => '15%',//控制精度 最少应该匹配几个，值可以为整型或百分比
-
             ]
 
         ],
-        // 字段间的匹配模式
-        'field_operator'=>'and', // and 同时满足； or 满足其中一个即可
         // 结果排序 为空时，自动按命中个数倒排
         'sort' => [
             // 'time' => 'asc' //asc 按字段值正序 desc 按字段值倒序
