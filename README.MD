@@ -92,7 +92,6 @@ $query = [
             [
                 'name' => 'tags',
                 'query' => '蔬菜',
-                'analyzer' => 'segment', // 分词模式 complete/not,代表不分词 整体匹配; segment 中文分词; 
             ]
 
         ],
