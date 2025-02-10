@@ -1,0 +1,12 @@
+{
+    "name": "administrator/wind-search-engine-enterprise",
+    "autoload": {
+        "psr-4": {
+            "WindSearch\\Index\\": "src/",
+            "WindSearch\\Core\\": "src/lib/",
+            "WindSearch\\DAO\\": "src/DAO/",
+            "WindSearch\\Exceptions\\": "src/Exceptions/"
+        }
+    },
+    "require": {}
+}
