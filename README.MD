@@ -6,7 +6,7 @@ windsearch，专业的PHP全文检索解决方案，可承受百万至千万的�
 
 在线文档：[https://rock365.github.io/](https://rock365.github.io/) 偶尔无法访问，多刷新几次就行
 
-
+点个star吧亲亲~~
 
 ### 它的优势是什么？
 
@@ -169,7 +169,7 @@ $mapping = [
 ];
 
 // 实例化对象
-$Wind = new \WindSearch\Index\Wind('test'); //$indexName 当前索引库的名称
+$Wind = new \WindSearch\Index\Wind('test'); //test 当前索引库的名称
 //检查是否存在此索引库
 $is_index = $Wind->checkIndex();
 // 如果存在此索引库
@@ -240,6 +240,7 @@ $resArr = $res['result']['_source'];
 ### 结语
 
 以上流程可以快速实现一个PHP全文检索，当然，这些只是餐前甜点，WindSearch还有更深入、更丰富的搜索功能等你挖掘：
+
 在线开发文档：[https://rock365.github.io/](https://rock365.github.io/) 偶尔访问不稳定，多刷新几次即可
 
 点个star吧亲亲O(∩_∩)O~~谢谢大家！
