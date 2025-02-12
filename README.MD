@@ -6,12 +6,6 @@ windsearch，专业的PHP全文检索解决方案，可承受百万至千万的�
 
 在线文档：[https://rock365.github.io/](https://rock365.github.io/) 偶尔无法访问，多刷新几次就行
 
-**WindSearch采用双重授权模式：**
-
-1. 根据AGPLv3协议**免费使用**，需遵守其全部条款
-
-2. 或通过支付授权费获得商业许可，免除AGPL限制
-
 
 
 ### 它的优势是什么？
