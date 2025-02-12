@@ -11158,58 +11158,6 @@ class Wind extends Func
             return $res;
         }
     }
-    private $txtDbHandle;
-    private $txtDbCacheHandle;
-    private $txtDbIncrIndexHandle;
-
-    private function loadTxtDb()
-    {
-        require_once 'TxtDb.php';
-        $this->txtDbHandle = new \TxtDb();
-    }
-    private function loadCacheTxtDb()
-    {
-        require_once 'TxtDb.php';
-        $this->txtDbCacheHandle =  new \TxtDb();
-    }
-
-    private function loadIncrIndexTxtDb()
-    {
-        require_once 'TxtDb.php';
-        $this->txtDbIncrIndexHandle =  new \TxtDb();
-    }
-
-    private function emptyTxtDb($field)
-    {
-        $storageDir  = $this->getStorageDir();
-        $currDir = $this->getCurrDir();
-        $from = $currDir . 'windIndexCore/txt_db_basefile/';
-        $to = $storageDir . '/index/' . $field . '_index';
-        $this->txtDbHandle->open($from, $to, true, true);
-    }
-
-    private function emptyIncrIndexTxtDb()
-    {
-        $storageDir  = $this->getStorageDir();
-        $currDir = $this->getCurrDir();
-        $from = $currDir . 'windIndexCore/txt_db_basefile/';
-        $to = $storageDir . '/index/txt_incr_index';
-        $this->txtDbIncrIndexHandle->open($from, $to, true, true);
-    }
-
-    private function renameIncrIndexTxtDb($field)
-    {
-        $storageDir  = $this->getStorageDir();
-        $old = $storageDir . '/index/' . $field . '_index';
-        $new = $storageDir . '/index/txt_incr_index';
-        if (!is_file($new . '.idx') || !is_file($new . '.dat')) {
-            return;
-        }
-        unlink($old . '.idx');
-        unlink($old . '.dat');
-        rename($new . '.idx', $old . '.idx');
-        rename($new . '.dat', $old . '.dat');
-    }
 
     public function getIndexList()
     {
