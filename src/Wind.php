@@ -5033,7 +5033,7 @@ class Wind extends Func
         }
     }
 
-    public function differentialDecompression($postlist)
+    private function differentialDecompression($postlist)
     {
         if ($this->primarykeyType !== 'Int_Incremental') {
             return $postlist;
@@ -5059,7 +5059,7 @@ class Wind extends Func
         return base64_encode(gzdeflate($string));
     }
 
-    public function systemDecompression($string)
+    private function systemDecompression($string)
     {
         return gzinflate(base64_decode($string));
     }
@@ -6188,8 +6188,6 @@ class Wind extends Func
         $this->initCache();
         if ($key) {
 
-
-
             $key = $this->IndexName . '_' . $key;
 
             $currDir = $this->getCurrDir();
@@ -6723,9 +6721,13 @@ class Wind extends Func
         $count_all = 0;
         $notMerge = $fc_arr;
         $fc_arr = array_unique(array_merge($fc_arr, $synonym));
-        $cacheKey  = md5(json_encode($queryList));
+
+        $cacheKey = $this->get_cachekey($queryList);
+
         $resultCache = $this->getCache($cacheKey);
+
         if ($resultCache) {
+
             return json_decode($resultCache, true);
         }
         $allArr = [];
@@ -6857,7 +6859,7 @@ class Wind extends Func
             $id_str = isset($curr_page_id_arr[0]) ? $curr_page_id_arr[0] : '';
         }
         $intersection = array(
-            'id_str' => $id_str,             'id_str_all' => $ids_all,             'id_score' => $id_score,             'ids_all_score' => $ids_all_score,             'total' => isset($count_all) ? $count_all : 0,             'curr_listRows_real' => count($curr_page_id_arr),
+            'id_str' => $id_str,             'all_id_str' => $ids_all,             'id_score' => $id_score,             'all_id_score' => $ids_all_score,             'total' => isset($count_all) ? $count_all : 0,             'curr_listRows_real' => count($curr_page_id_arr),
         );
         $info = array(
             'total' => isset($count_all) ? $count_all : 0,
@@ -6866,7 +6868,8 @@ class Wind extends Func
             'intersection' => $intersection,
             'info' => $info,
         );
-        $this->cache($cacheKey, json_encode($result_info));
+
+        $this->cache($cacheKey, $this->build_cache_data($result_info));
         return $result_info;
     }
 
@@ -6893,7 +6896,7 @@ class Wind extends Func
         $fc_arr_mer = array_unique(array_merge($fc_arr, $synonym));
         $tempIds = $fc_arr_mer;
 
-        $cacheKey = md5(json_encode($queryList));
+        $cacheKey = $this->get_cachekey($queryList);
         $resultCache = $this->getCache($cacheKey);
         if ($resultCache) {
             return json_decode($resultCache, true);
@@ -7006,13 +7009,14 @@ class Wind extends Func
             $id_str = isset($f_arr[0]) ? $f_arr[0] : '';
         }
         $intersection = array(
-            'id_str' => $id_str,             'id_str_all' => $ids_all,             'id_score' => $id_score,             'ids_all_score' => $ids_all_score,             'curr_listRows_real' => count($f_arr),             'total' => $total,
+            'id_str' => $id_str,             'all_id_str' => $ids_all,             'id_score' => $id_score,             'all_id_score' => $ids_all_score,             'curr_listRows_real' => count($f_arr),             'total' => $total,
         );
         $result_info = array(
             'intersection' => $intersection,
             'info' => $info,
         );
-        $this->cache($cacheKey, json_encode($result_info));
+
+        $this->cache($cacheKey, $this->build_cache_data($result_info));
         return $result_info;
     }
 
@@ -7200,7 +7204,7 @@ class Wind extends Func
         $page = $queryList['page'];
         $listRows = $queryList['list_rows'];
 
-        $cacheKey  = md5(json_encode($queryList));
+        $cacheKey = $this->get_cachekey($queryList);
         $resultCache = $this->getCache($cacheKey);
         if ($resultCache) {
             return json_decode($resultCache, true);
@@ -7306,13 +7310,13 @@ class Wind extends Func
             $id_str = isset($f_arr[0]) ? $f_arr[0] : '';
         }
         $intersection = array(
-            'id_str' => $id_str,             'id_str_all' => $ids_all,             'id_score' => $id_score,             'ids_all_score' => $ids_all_score,             'curr_listRows_real' => count($f_arr),             'total' => $total,
+            'id_str' => $id_str,             'all_id_str' => $ids_all,             'id_score' => $id_score,             'all_id_score' => $ids_all_score,             'curr_listRows_real' => count($f_arr),             'total' => $total,
         );
         $result_info = array(
             'intersection' => $intersection,
             'info' => $info,
         );
-        $this->cache($cacheKey, json_encode($result_info));
+        $this->cache($cacheKey, $this->build_cache_data($result_info));
         return $result_info;
     }
 
@@ -9354,7 +9358,8 @@ class Wind extends Func
     {
         $page = $query['page'];
         $listRows = $query['list_rows'];
-        $cacheKey = md5(json_encode($query));
+
+        $cacheKey = $this->get_cachekey($query);
         $resultCache = $this->getCache($cacheKey);
         if ($resultCache) {
             return json_decode($resultCache, true);
@@ -9385,13 +9390,14 @@ class Wind extends Func
             $id_str = isset($f_arr[0]) ? $f_arr[0] : '';
         }
         $intersection = array(
-            'id_str' => $id_str,             'id_str_all' => $ids_all,             'id_score' => $id_score,             'ids_all_score' => $ids_all_score,             'curr_listRows_real' => count($f_arr),             'total' => $total,
+            'id_str' => $id_str,             'all_id_str' => $ids_all,             'id_score' => $id_score,             'all_id_score' => $ids_all_score,             'curr_listRows_real' => count($f_arr),             'total' => $total,
         );
         $result_info = array(
             'intersection' => $intersection,
             'info' => $info,
         );
-        $this->cache($cacheKey, json_encode($result_info));
+
+        $this->cache($cacheKey, $this->build_cache_data($result_info));
         return $result_info;
     }
     private function getDataOfMinimumShouldMatch($minimum_should_match, $lenTerm, $idsScore)
@@ -9819,7 +9825,7 @@ class Wind extends Func
 
     private function match_prefix_suffix($queryList)
     {
-        $cacheKey = md5(json_encode($queryList));
+        $cacheKey = $this->get_cachekey($queryList);
         $resultCache = $this->getCache($cacheKey);
         if ($resultCache) {
             return json_decode($resultCache, true);
@@ -9909,19 +9915,19 @@ class Wind extends Func
             $id_str = isset($f_arr[0]) ? $f_arr[0] : '';
         }
         $intersection = array(
-            'id_str' => $id_str,             'id_str_all' => $ids_all,             'id_score' => $id_score,             'ids_all_score' => $ids_all_score,             'curr_listRows_real' => count($f_arr),             'total' => $total,
+            'id_str' => $id_str,             'all_id_str' => $ids_all,             'id_score' => $id_score,             'all_id_score' => $ids_all_score,             'curr_listRows_real' => count($f_arr),             'total' => $total,
         );
         $result_info = array(
             'intersection' => $intersection,
             'info' => $info,
         );
-        $this->cache($cacheKey, json_encode($result_info));
+        $this->cache($cacheKey, $this->build_cache_data($result_info));
         return $result_info;
     }
 
     private function match_suffix($queryList)
     {
-        $cacheKey = md5(json_encode($queryList));
+        $cacheKey = $this->get_cachekey($queryList);
         $resultCache = $this->getCache($cacheKey);
         if ($resultCache) {
             return json_decode($resultCache, true);
@@ -10072,19 +10078,19 @@ class Wind extends Func
             $id_str = isset($f_arr[0]) ? $f_arr[0] : '';
         }
         $intersection = array(
-            'id_str' => $id_str,             'id_str_all' => $ids_all,             'id_score' => $id_score,             'ids_all_score' => $ids_all_score,             'curr_listRows_real' => count($f_arr),             'total' => $total,
+            'id_str' => $id_str,             'all_id_str' => $ids_all,             'id_score' => $id_score,             'all_id_score' => $ids_all_score,             'curr_listRows_real' => count($f_arr),             'total' => $total,
         );
         $result_info = array(
             'intersection' => $intersection,
             'info' => $info,
         );
-        $this->cache($cacheKey, json_encode($result_info));
+        $this->cache($cacheKey, $this->build_cache_data($result_info));
         return $result_info;
     }
 
     private function match_prefix($queryList)
     {
-        $cacheKey = md5(json_encode($queryList));
+        $cacheKey = $this->get_cachekey($queryList);
         $resultCache = $this->getCache($cacheKey);
         if ($resultCache) {
             return json_decode($resultCache, true);
@@ -10217,18 +10223,18 @@ class Wind extends Func
             $id_str = isset($f_arr[0]) ? $f_arr[0] : '';
         }
         $intersection = array(
-            'id_str' => $id_str,             'id_str_all' => $ids_all,             'id_score' => $id_score,             'ids_all_score' => $ids_all_score,             'curr_listRows_real' => count($f_arr),             'total' => $total,
+            'id_str' => $id_str,             'all_id_str' => $ids_all,             'id_score' => $id_score,             'all_id_score' => $ids_all_score,             'curr_listRows_real' => count($f_arr),             'total' => $total,
         );
         $result_info = array(
             'intersection' => $intersection,
             'info' => $info,
         );
-        $this->cache($cacheKey, json_encode($result_info));
+        $this->cache($cacheKey, $this->build_cache_data($result_info));
         return $result_info;
     }
     private function match_range($queryList)
     {
-        $cacheKey = md5(json_encode($queryList));
+        $cacheKey = $this->get_cachekey($queryList);
         $resultCache = $this->getCache($cacheKey);
         if ($resultCache) {
             return json_decode($resultCache, true);
@@ -10263,19 +10269,19 @@ class Wind extends Func
             $id_str = isset($f_arr[0]) ? $f_arr[0] : '';
         }
         $intersection = array(
-            'id_str' => $id_str,             'id_str_all' => $ids_all,             'id_score' => $id_score,             'ids_all_score' => $ids_all_score,             'curr_listRows_real' => count($f_arr),             'total' => $total,
+            'id_str' => $id_str,             'all_id_str' => $ids_all,             'id_score' => $id_score,             'all_id_score' => $ids_all_score,             'curr_listRows_real' => count($f_arr),             'total' => $total,
         );
         $result_info = array(
             'intersection' => $intersection,
             'info' => $info,
         );
-        $this->cache($cacheKey, json_encode($result_info));
+        $this->cache($cacheKey, $this->build_cache_data($result_info));
         return $result_info;
     }
 
     private function match_all($queryList)
     {
-        $cacheKey = md5(json_encode($queryList));
+        $cacheKey = $this->get_cachekey($queryList);
         $resultCache = $this->getCache($cacheKey);
         if ($resultCache) {
             return json_decode($resultCache, true);
@@ -10322,7 +10328,7 @@ class Wind extends Func
 
     private function match_primarykey($queryList)
     {
-        $cacheKey = md5(json_encode($queryList));
+        $cacheKey = $this->get_cachekey($queryList);
         $resultCache = $this->getCache($cacheKey);
         if ($resultCache) {
             return json_decode($resultCache, true);
@@ -10366,7 +10372,7 @@ class Wind extends Func
 
     private function match_rand($queryList)
     {
-        $cacheKey = md5(json_encode($queryList));
+        $cacheKey = $this->get_cachekey($queryList);
         $resultCache = $this->getCache($cacheKey);
         if ($resultCache) {
             return json_decode($resultCache, true);
@@ -10389,6 +10395,10 @@ class Wind extends Func
                 $docNum = $maxMinId[2];
                 if ($docNum <= $num) {
                     $rand_primarykey = range(1, $docNum);
+                } else if ($docNum <= 50) {
+                    $build_primarykey = range(1, $docNum);
+                    shuffle($build_primarykey);
+                    $rand_primarykey = array_slice($build_primarykey, 0, $num);
                 } else {
                     $rand_primarykey = [];
                     while (count($rand_primarykey) < $num) {
@@ -10426,8 +10436,48 @@ class Wind extends Func
                 'id_score' => $id_score,
             ];
         }
-        $this->cache($cacheKey, json_encode($res));
+        $this->cache($cacheKey, $this->build_cache_data($res));
         return $res;
+    }
+
+    private function get_cachekey($queryList)
+    {
+        if (!isset($queryList['sort']) || empty($queryList['sort']) || isset($queryList['sort']['_score'])) {
+            if ($queryList['mode'] !== 'match_phrase') {
+                $cacheKey = md5(json_encode($queryList));
+                return $cacheKey;
+            } else {
+                $queryList['page'] = 1;
+                $queryList['list_rows'] = 10;
+                $cacheKey = md5(json_encode($queryList));
+                return $cacheKey;
+            }
+        } else {
+            $queryList['page'] = 1;
+            $queryList['list_rows'] = 10;
+            $cacheKey = md5(json_encode($queryList));
+            return $cacheKey;
+        }
+    }
+
+    private function build_cache_data($res)
+    {
+        $queryList = $this->queryList;
+
+        if (!isset($queryList['sort']) || empty($queryList['sort']) || isset($queryList['sort']['_score'])) {
+            if ($queryList['mode'] !== 'match_phrase') {
+                if (isset($res['intersection']['all_id_str'])) {
+                    $res['intersection']['all_id_str'] = '';
+                }
+                if (isset($res['intersection']['all_id_score'])) {
+                    $res['intersection']['all_id_score'] = '';
+                }
+            }
+
+            return json_encode($res);
+        } else {
+            return json_encode($res);
+        }
     }
 
     private function searchEntry($queryList)
@@ -10449,17 +10499,19 @@ class Wind extends Func
                     if ($isKeyWordField) {
                         return $this->postingListMatch($queryList);
                     } else {
-                        if (isset($queryList['filter']['conditions']) || isset($queryList['filter']['range']) || isset($queryList['sort'])) {
+                        if (isset($queryList['filter']['conditions']) || isset($queryList['filter']['range']) || (isset($queryList['sort']) && !empty($queryList['sort']) && !isset($queryList['sort']['_score']))) {
                             if (isset($queryList['fc_arr']) && count($queryList['fc_arr']) > 1) {
                                 $queryList['minimum_should_match'] = (isset($queryList['minimum_should_match']) && $queryList['minimum_should_match'] !== false) ? $queryList['minimum_should_match'] : 2;
                             }
+
                             return $this->postingListMatch($queryList, '_postinglist');
                         } else {
+
                             return $this->match($queryList);
                         }
                     }
                 } else {
-                    if (isset($queryList['filter']['conditions']) || isset($queryList['filter']['range']) || isset($queryList['sort'])) {
+                    if (isset($queryList['filter']['conditions']) || isset($queryList['filter']['range']) || (isset($queryList['sort']) && !empty($queryList['sort']) && !isset($queryList['sort']['_score']))) {
                         if (isset($queryList['fc_arr']) && count($queryList['fc_arr']) > 1) {
                             $queryList['minimum_should_match'] = (isset($queryList['minimum_should_match']) && $queryList['minimum_should_match'] !== false) ? $queryList['minimum_should_match'] : 2;
                         }
@@ -11029,29 +11081,31 @@ class Wind extends Func
                 ['name' => $fields,]
             ];
         }
-        foreach ($res as $k => $v) {
-            $_score = [];
-            foreach ($fields as $f) {
-                $fd = $f['name'];
-                if (!isset($v[$fd])) {
-                    continue;
+        if (!empty($fields)) {
+            foreach ($res as $k => $v) {
+                $_score = [];
+                foreach ($fields as $f) {
+                    $fd = $f['name'];
+                    if (!isset($v[$fd])) {
+                        continue;
+                    }
+                    $str = $v[$fd];
+                    $count = [];
+                    $termsLen = count($terms) + 1;
+                    foreach ($terms as $t) {
+                        $loc = (int)stripos($str, $t);
+                        $count[] = $loc;
+                    }
+                    $max = (int)max($count);
+                    $min = (int)min($count);
+                    $diff = ($max - $min) + 1;
+                    $degree = (1 / ($diff / ($termsLen))) / 10;
+                    $_score[] = $degree;
                 }
-                $str = $v[$fd];
-                $count = [];
-                $termsLen = count($terms) + 1;
-                foreach ($terms as $t) {
-                    $loc = (int)stripos($str, $t);
-                    $count[] = $loc;
+                if (isset($res[$k]['_score'])) {
+                    $degree_avg = array_sum($_score) / $termsLen;
+                    $res[$k]['_score'] = ($res[$k]['_score'] + $degree_avg);
                 }
-                $max = (int)max($count);
-                $min = (int)min($count);
-                $diff = ($max - $min) + 1;
-                $degree = (1 / ($diff / ($termsLen))) / 10;
-                $_score[] = $degree;
-            }
-            if (isset($res[$k]['_score'])) {
-                $degree_avg = array_sum($_score) / $termsLen;
-                $res[$k]['_score'] = ($res[$k]['_score'] + $degree_avg);
             }
         }
         return $res;
@@ -12100,7 +12154,9 @@ class Wind extends Func
         if ($queryList['mode'] == 'multi_match') {
             $highlightField = $queryList['field'];
         } else if ($queryList['mode'] == 'match_bool') {
-            $highlightField = $this->queryList['field'];
+            // $highlightField = $this->queryList['field'];
+            $highlightField = [];
+            $this->queryList['field'] = [];
         } else if ($queryList['mode'] == 'match_range') {
             $highlightField = [];
         } else if ($queryList['mode'] == 'match_all') {
@@ -12126,8 +12182,8 @@ class Wind extends Func
                 $sortField = array_keys($queryList['sort'])[0];
                 if (($sortField == '_bm25_score')) {
                     if ($queryList['mode'] == 'match') {
-                        $idStrAll = $resArr['intersection']['id_str_all'];
-                        $idsAllScore = $resArr['intersection']['ids_all_score'];
+                        $idStrAll = $resArr['intersection']['all_id_str'];
+                        $idsAllScore = $resArr['intersection']['all_id_score'];
                         $resList = $this->getDataByIds($idStrAll);
                         $currFieldName = $this->queryList['field'];
                         $primarykey = $this->mapping['properties']['primarykey'];
@@ -12154,17 +12210,19 @@ class Wind extends Func
                     $resList =  $this->calculate_the_degree_of_term_aggregation($resList, $queryList['field'], $queryList['fc_arr_original']);
                     $resList = $this->usortRes($resList, $field = '_score');
                 } else {
-                    $idStrAll = $resArr['intersection']['id_str_all'];
-                    $idsAllScore = $resArr['intersection']['ids_all_score'];
+                    
+                    $idStrAll = $resArr['intersection']['all_id_str'];
+                    $idsAllScore = $resArr['intersection']['all_id_score'];
                     $resList = $this->getDataByIds($idStrAll);
                     $resList = $this->resSort($resList, $queryList);
                 }
             } else {
+
                 $idStr = $resArr['intersection']['id_str'];
                 $resList = $this->getDataByIds($idStr);
             }
         } else if ($queryList['mode'] === 'match_phrase') {
-            $idStrAll = $resArr['intersection']['id_str_all'];
+            $idStrAll = $resArr['intersection']['all_id_str'];
             $field = $queryList['field'];
             $query = $queryList['text'];
             $resList = $this->getDataByIds($idStrAll);
@@ -12235,6 +12293,7 @@ class Wind extends Func
         if ((isset($queryList['sort']) && !empty($queryList['sort'])) || ($queryList['mode'] == 'match_phrase')) {
             $resArrHighlight = $this->highLight($resList, $highlightField);
         } else {
+
             $resArrHighlight = $this->highLight($resList, $highlightField);
             $primarykey = $this->mapping['properties']['primarykey'];
             $arr_sort = [];
@@ -12248,8 +12307,10 @@ class Wind extends Func
             } else {
                 $originalRes = $arr_sort;
             }
+
             $resArrHighlight['_source'] = $originalRes;
             $originalRes =  $this->calculate_the_degree_of_term_aggregation($resArrHighlight['_source'], $this->queryList['field'], $queryList['fc_arr_original']);
+
             $originalRes = $this->usortRes($originalRes, $field = '_score');
             $resArrHighlight['_source'] = $originalRes;
         }
@@ -12257,6 +12318,7 @@ class Wind extends Func
             'result' => $resArrHighlight,
             'info' => $resArr['info'],
         ];
+
         return $res;
     }
 
@@ -12344,11 +12406,7 @@ class Wind extends Func
         if (!$this->isGeoField($field)) {
             $this->throwWindException($field . ' 字段不属于geo_point类型，无法进行地理空间搜索', 0);
         }
-        $cacheKey = md5(json_encode($query));
-        $resultCache = $this->getCache($cacheKey);
-        if ($resultCache) {
-            return json_decode($resultCache, true);
-        }
+
         if (is_array($geo_distance)) {
             $is_array_geo_distance = true;
             if (substr($geo_distance[0], -2) == 'km') {
@@ -13438,11 +13496,7 @@ class Wind extends Func
 
     private function match_fuzzy($query)
     {
-        $cacheKey = md5(json_encode($query));
-        $resultCache = $this->getCache($cacheKey);
-        if ($resultCache) {
-            return json_decode($resultCache, true);
-        }
+
         $this->queryList = $query;
         $terms = $query['fc_arr'];
         $prefix = array_map(function ($t) {
@@ -13454,7 +13508,6 @@ class Wind extends Func
         $terms = array_merge($terms, $prefix, $suffex);
         $query['text'] = $terms;
         $res = $this->match_prefix_suffix($query);
-        $this->cache($cacheKey, json_encode($res));
         return $res;
     }
 
