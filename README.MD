@@ -1,3 +1,5 @@
+**PHP是世界上最好的语言！点个star吧亲亲~~**
+
 ### Windsearch
 
 windsearch，专业的PHP全文检索解决方案，可承受百万至千万的数据。**零安装配置**、零心智负担，拥有**强大的算法**，包含**多种检索模式**，集成到PHP项目后，**无需维护，一劳永逸**。
@@ -6,7 +8,7 @@ windsearch，专业的PHP全文检索解决方案，可承受百万至千万的�
 
 在线文档：[https://rock365.github.io/](https://rock365.github.io/) 偶尔无法访问，多刷新几次就行
 
-点个star吧亲亲~~
+
 
 ### 它的优势是什么？
 
@@ -250,5 +252,4 @@ $resArr = $res['result']['_source'];
 微信：azg555666
 
 ![](https://github.com/rock365/img/blob/main/afe22e05ee161083cfbd1336f7facd2.jpg)
-
 
