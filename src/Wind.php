@@ -6155,26 +6155,8 @@ class Wind extends Func
             return false;
         }
         $obj = new Cache();
-        $obj->setCache($key, $values, $this->cacheTimeOut, $this->IndexName);
+        $obj->setCache($key, $values, $this->cacheTimeOut, $this->IndexName, $this->redis_obj);
         return;
-        $this->initCache();
-        if ($key) {
-
-            $key = $this->IndexName . '_' . $key;
-
-            $currDir = $this->getCurrDir();
-            $dir = $currDir . 'cache/cache.db';
-
-            $pdo = new PDO_sqlite($dir);
-            $values = [
-                'settime' => time(),
-                'timeout' => $this->cacheTimeOut,
-                'content' => $values,
-            ];
-            $values = base64_encode(json_encode($values));
-            $sql = "insert into cache (search_key,content)values('$key','$values');";
-            $pdo->exec($sql);
-        }
     }
 
     private function getCache($key)
@@ -6183,45 +6165,8 @@ class Wind extends Func
             return false;
         }
         $obj = new Cache();
-        $res = $obj->getCache($key, $this->IndexName);
+        $res = $obj->getCache($key, $this->IndexName, $this->redis_obj);
         return $res;
-        $this->initCache();
-        if ($key) {
-
-            $key = $this->IndexName . '_' . $key;
-
-            $currDir = $this->getCurrDir();
-            $dir = $currDir . 'cache/cache.db';
-
-            $pdo = new PDO_sqlite($dir);
-            $sql = "select id,content from cache where search_key='$key';";
-            $res = $pdo->getRow($sql);
-            if ($res) {
-                $content = isset($res['content']) ? $res['content'] : '';
-                $id = isset($res['id']) ? $res['id'] : '';
-                if ($content != '') {
-                    $res = json_decode(base64_decode($content), true);
-                    $timeout = $res['timeout'];
-                    $content = $res['content'];
-                    $settime = $res['settime'];
-                    if ((int)$timeout > 0) {
-                        if ((time() - $settime) > $timeout) {
-                            $sql = "delete from cache where id=$id;";
-                            $pdo->exec($sql);
-                            $content = false;
-                        }
-                    }
-                }
-            } else {
-                $content = false;
-            }
-
-
-
-
-
-            return $content;
-        }
     }
 
     public function delCache()
@@ -6235,15 +6180,15 @@ class Wind extends Func
     }
 
 
-
-
-
-
-
-
-
-
-
+    private $redis_obj = false;
+    public function set_redis_object($obj = false)
+    {
+        if (is_object($obj)) {
+            $this->redis_obj = $obj;
+        } else {
+            return false;
+        }
+    }
 
 
     private function buildTermStepScore($mapping)
@@ -12210,7 +12155,7 @@ class Wind extends Func
                     $resList =  $this->calculate_the_degree_of_term_aggregation($resList, $queryList['field'], $queryList['fc_arr_original']);
                     $resList = $this->usortRes($resList, $field = '_score');
                 } else {
-                    
+
                     $idStrAll = $resArr['intersection']['all_id_str'];
                     $idsAllScore = $resArr['intersection']['all_id_score'];
                     $resList = $this->getDataByIds($idStrAll);

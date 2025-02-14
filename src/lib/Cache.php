@@ -25,7 +25,7 @@ class Cache
         }
 
         $dir = $currDir . '/../cache/cache.db';
-        
+
         if (is_file($dir)) {
             return;
         }
@@ -46,34 +46,36 @@ class Cache
      * 设置搜索结果缓存
      * @param $timeOut 缓存过期时间 秒
      */
-    public function setCache($key, $values, $cachetimeout, $indexname)
+    public function setCache($key, $values, $cachetimeout, $indexname, $redisObj = false)
     {
-
-        // 初始化
-        $this->initCache();
-
-        // 设置缓存
-        if ($key) {
-
+        if (is_object($redisObj)) {
             $key = $indexname . '_' . $key;
+            $values = base64_encode(gzdeflate($values));
+            $redisObj->setex($key, $cachetimeout, $values);
+        } else {
+           
+            $this->initCache();
 
-            // sqlite3存储
-            // 使用sqlite存储倒排索引
+            if ($key) {
 
-            $currDir = dirname(__FILE__);
-            $dir = $currDir . '/../cache/cache.db';
+                $key = $indexname . '_' . $key;
 
-            $pdo = new PDO_sqlite($dir);
+                $currDir = dirname(__FILE__);
+                $dir = $currDir . '/../cache/cache.db';
 
+                $pdo = new PDO_sqlite($dir);
 
-            $values = [
-                'settime' => time(),
-                'timeout' => $cachetimeout,
-                'content' => $values,
-            ];
-            $values = base64_encode(json_encode($values));
-            $sql = "insert into cache (search_key,content)values('$key','$values');";
-            $pdo->exec($sql);
+                $values = [
+                    'settime' => time(),
+                    'timeout' => $cachetimeout,
+                    'content' => $values,
+                ];
+               
+                $values = base64_encode(gzdeflate(json_encode($values)));
+               
+                $sql = "insert into cache (search_key,content)values('$key','$values');";
+                $pdo->exec($sql);
+            }
         }
     }
 
@@ -81,57 +83,62 @@ class Cache
     /**
      * 获取缓存
      */
-    public function getCache($key, $indexname)
+    public function getCache($key, $indexname, $redisObj = false)
     {
-
-        // 初始化
-        $this->initCache();
-        // 查询缓存
-        if ($key) {
-
-
+        if (is_object($redisObj)) {
             $key = $indexname . '_' . $key;
+            $content = $redisObj->get($key);
+            $res = json_decode(gzinflate(base64_decode($content)), true);
+            return $res;
+        } else {
 
-            // sqlite3存储
-            // 使用sqlite存储倒排索引
+            $this->initCache();
 
-            $currDir = dirname(__FILE__);
-            $dir = $currDir . '/../cache/cache.db';
+            if ($key) {
 
-            $dbname = $dir;
-            $pdo = new PDO_sqlite($dbname);
+                $key = $indexname . '_' . $key;
 
+                $currDir = dirname(__FILE__);
+                $dir = $currDir . '/../cache/cache.db';
 
-            $sql = "select id,content from cache where search_key='$key';";
-            $res = $pdo->getRow($sql);
+                $dbname = $dir;
+                $pdo = new PDO_sqlite($dbname);
+                
 
-            if ($res) {
-                $content = isset($res['content']) ? $res['content'] : '';
-                $id = isset($res['id']) ? $res['id'] : '';
-                if ($content != '') {
-                    $res = json_decode(base64_decode($content), true);
-                    $timeout = $res['timeout'];
-                    $content = $res['content'];
-                    $settime = $res['settime'];
+                $sql = "select id,content from cache where search_key='$key';";
+                $res = $pdo->getRow($sql);
 
-                    // 判断过期
-                    if ((int)$timeout > 0) {
-                        // 过期
-                        if ((time() - $settime) > $timeout) {
-                            // 删除过期缓存
-                            $sql = "delete from cache where id=$id;";
-                            $pdo->exec($sql);
-
-                            $content = false;
+                if ($res) {
+                    $content = isset($res['content']) ? $res['content'] : '';
+                    $id = isset($res['id']) ? $res['id'] : '';
+                   
+                    if ($content != '') {
+                        $res = json_decode(gzinflate(base64_decode($content)), true);
+                        
+                        $timeout = $res['timeout'];
+                        $content = $res['content'];
+                        $settime = $res['settime'];
+                       
+                        // 判断过期
+                        if ((int)$timeout > 0) {
+                            // 过期
+                            if ((time() - $settime) > $timeout) {
+                                // 删除过期缓存
+                                $sql = "delete from cache where id='$id';";
+                                $pdo->exec($sql);
+                                $content = false;
+                            }
                         }
                     }
+                } else {
+                    $content = false;
                 }
+
+                
+                return $content;
             } else {
-                $content = false;
+                return false;
             }
-
-
-            return $content;
         }
     }
 
