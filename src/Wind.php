@@ -794,6 +794,7 @@ class Wind extends Func
             $mapping = json_decode(file_get_contents($mappingfile), true);
             $this->long_short_word_mapping = $mapping;
         }
+       
         if (is_array($this->long_short_word_mapping)) {
             return strtr($str, $this->long_short_word_mapping);
         } else {
@@ -801,26 +802,36 @@ class Wind extends Func
         }
     }
 
+    private $stringPreprocessingContainer = [];
     private function stringPreprocessing($str)
     {
-        $original_number = [];
+        // $original_number = [];
         if (preg_match_all("/[a-zA-Z0-9\.]+/i", $str, $mat)) {
-            $original_number = $mat[0];
+            // $original_number = $mat[0];
+            $this->stringPreprocessingContainer = array_merge($this->stringPreprocessingContainer,$mat[0]);
         };
 
-        $str = preg_replace('#([a-zA-Z]{4,})#i', ' $1 ', $str);
+        if (preg_match_all("/[a-zA-Z]+/i", $str, $mat)) {
+            $this->stringPreprocessingContainer = array_merge($this->stringPreprocessingContainer,$mat[0]);
+        };
 
+        if (preg_match_all("/[[0-9]+/i", $str, $mat)) {
+            $this->stringPreprocessingContainer = array_merge($this->stringPreprocessingContainer,$mat[0]);
+        };
+
+        // $str = preg_replace('#([a-zA-Z]{4,})#i', ' $1 ', $str);
 
         $str = $this->cutLongWords($str);
+        
         $str = preg_replace('#([ ]{2,})#i', ' ', $str);
-
-
-
+        if (preg_match_all("/[a-zA-Z]+/i", $str, $mat)) {
+            $this->stringPreprocessingContainer = array_merge($this->stringPreprocessingContainer,$mat[0]);
+        };
 
         $str = preg_replace('#(\_|\-|\.|\/|@|\#|\%|\+|\*)#i', ' $1 ', $str);
-        if (!empty($original_number)) {
-            $str .= ' ' . implode(' ', $original_number);
-        }
+        // if (!empty($original_number)) {
+        //     $str .= ' ' . implode(' ', $original_number);
+        // }
         return $str;
     }
     private function cn2num($string)
@@ -3685,7 +3696,7 @@ class Wind extends Func
     {
         $str = strtolower($str);
         if ($this->isStringPreprocessing) {
-            $str = $this->stringPreprocessing($str);
+            $this->stringPreprocessing($str);
         }
         if ($this->isTraditionalToSimplified) {
             $str = $this->traditionalToSimplified($str);
@@ -3704,6 +3715,9 @@ class Wind extends Func
         if ($this->isZhToNumber) {
             $ZhToNumber = $this->ZhToNumber($str);
             $arrresult = array_merge($arrresult, $ZhToNumber);
+        }
+        if(!empty($this->stringPreprocessingContainer)){
+            $arrresult = array_merge($arrresult, $this->stringPreprocessingContainer);
         }
         if (!empty($arrresult)) {
             $arrresult = array_unique($arrresult);
@@ -3724,7 +3738,7 @@ class Wind extends Func
         }
         $str = strtolower($str);
         if ($this->isStringPreprocessing) {
-            $str = $this->stringPreprocessing($str);
+            $this->stringPreprocessing($str);
         }
         if ($this->isTraditionalToSimplified) {
             $str = $this->traditionalToSimplified($str);
@@ -3733,6 +3747,9 @@ class Wind extends Func
         if ($this->isZhToNumber) {
             $ZhToNumber = $this->ZhToNumber($str);
             $arrresult = array_merge($arrresult, $ZhToNumber);
+        }
+        if(!empty($this->stringPreprocessingContainer)){
+            $arrresult = array_merge($arrresult, $this->stringPreprocessingContainer);
         }
         if (!empty($arrresult)) {
             $arrresult = array_unique($arrresult);
