@@ -2,7 +2,7 @@
 
 ### 让中文搜索变得像呼吸一样简单
 
-[![AGPL License](https://img.shields.io/github/license/rock365/windsearch)](LICENSE) [![GitHub Stars](https://img.shields.io/github/stars/rock365/windsearch?style=social)](https://github.com/yourname/windsearch/stargazers)
+[![AGPL License](https://img.shields.io/github/license/rock365/windsearch)](LICENSE) [![GitHub Stars](https://img.shields.io/github/stars/rock365/windsearch?style=social)](https://github.com/rock365/windsearch/stargazers)
 
 
 
