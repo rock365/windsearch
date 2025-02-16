@@ -3727,7 +3727,7 @@ class Wind extends Func
         }
         if (!empty($this->stringPreprocessingContainer)) {
             $arrresult = array_merge($arrresult, $this->stringPreprocessingContainer);
-            $this->stringPreprocessingContainer = [];
+            $this->stringPreprocessingContainer = []; //
         }
         if (!empty($arrresult)) {
             $arrresult = array_unique($arrresult);
@@ -3760,7 +3760,7 @@ class Wind extends Func
         }
         if (!empty($this->stringPreprocessingContainer)) {
             $arrresult = array_merge($arrresult, $this->stringPreprocessingContainer);
-            $this->stringPreprocessingContainer = [];
+            $this->stringPreprocessingContainer = []; //
         }
         if (!empty($arrresult)) {
             $arrresult = array_unique($arrresult);
