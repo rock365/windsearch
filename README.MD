@@ -1,70 +1,79 @@
-### WindSearch
+# WindSearch 🔍 [![PHP Version](https://img.shields.io/badge/PHP-7.3%2B-brightgreen)]()
 
-**让PHP开发者告别ES的臃肿配置**
+### 让中文搜索变得像呼吸一样简单
 
-**PHP是世界上最好的语言！**
-
-点个star吧亲亲~~，助力WindSearch成为PHP基础生态中的一员！
-
-windsearch，专业的PHP全文检索解决方案，可承受百万至千万的数据。**零安装配置**、零心智负担，拥有**强大的算法**，包含**多种检索模式**，集成到PHP项目后，**无需维护，一劳永逸**。
-
-本搜索引擎适合外贸独立站、垂直社区、区域性电商、cms系统、PHP开发工作室、服务器配置一般的网站、需要快速搭建搜索的网站、个人博客等。
-
-在线文档：[https://rock365.github.io/](https://rock365.github.io/) 偶尔无法访问，多刷新几次就行
+[![AGPL License](https://img.shields.io/github/license/rock365/windsearch)](LICENSE) [![GitHub Stars](https://img.shields.io/github/stars/rock365/windsearch?style=social)](https://github.com/yourname/windsearch/stargazers)
 
 
 
-### 它的优势是什么？
+🚀 **PHP开发者苦ES久矣！**  
+还在为Elasticsearch的复杂配置头疼？WindSearch给您：
 
-**易用性**：完全零配置（你没有听错），没有任何繁杂臃肿的安装设置，一行代码就能搭建完成；完全接口化操作；文档详细，复制粘贴就能实现各种搜索场景。
-
-**安全**：完全本地化部署，所有代码完全有您掌握；
-
-**PHP原生友好**：windsearch是纯PHP开发的，能跟PHP项目无缝集成，不会产生跨语言调用的性能损耗；
-
-**零运维成本**：不会产生任何维护调优的成本，只要网站正常运行，搜索引擎就能一直运行，永不宕机；
-
-**性能强悍**：百万级数据毫秒级响应，千万级数据面不改色，且拥有多种搜索模式；
-
-**极高性价比**：磁盘式搜索引擎，对服务器内存资源占用极小，可大幅降低服务器成本；
+- **零依赖**：无需Java环境，告别JVM调优噩梦
+- **闪电速度**：百万数据毫秒级响应
+- **中文优化**：内置20万+专业词库，分词精度超98%
+- **内存克星**：小内存也能搜索大数据，内存占用为零
 
 
 
-### 多种搜索模式
+💻 **一行代码开启搜索革命**：
 
-**match 单字段检索**
-
-**multi_match 多字段检索**
-
-**match_fuzzy 模糊搜索**
-
-**match_prefix 前缀匹配**
-
-**match_suffix 后缀匹配**
-
-**match_prefix_suffix 前后缀混合匹配**
-
-**match_phrase 短语搜索**
-
-**match_terms 精确搜索**
-
-**match_bool 布尔搜索(无限嵌套)**
-
-**match_range 范围查询**
-
-**match_all 查询所有数据**
-
-**match_rand 随机获取数据**
-
-**match_primarykey 根据主键查询数据**
-
-**match_geo 地理空间搜索**
-
-**match_auto_completion 自动补全**
+```php
+// 安装简单到犯规
+require_once 'yourdirname/vendor/autoload.php';
+```
 
 
 
-### 其它功能
+🚀 **众多优势，不容错过！**
+
+- ✅ 比数据库LIKE快**300倍**，比ES轻量**90%**
+
+- ✅ 天然适配**Laravel**/**ThinkPHP**等主流框架
+
+- ✅ 支持「全文搜索」「同义词扩展」「字段权重优化」「自定义分词插件」等
+
+- ✅ 支持增量索引合并
+
+- ✅ 支持实时索引、实时搜索
+
+- ✅ 支持搜索过滤
+
+- ✅ 支持int递增主键、uuid主键
+
+  
+
+😁 **多种搜索模式:**
+
+match 单字段检索
+
+multi_match 多字段检索
+
+match_fuzzy 模糊搜索
+
+match_prefix 前缀匹配
+
+match_suffix 后缀匹配
+
+match_prefix_suffix 前后缀混合匹配
+
+match_phrase 短语搜索
+
+match_terms 精确搜索
+
+match_bool 布尔搜索(无限嵌套)
+
+match_range 范围查询
+
+match_all 查询所有数据
+
+match_rand 随机获取数据
+
+match_primarykey 根据主键查询数据
+
+match_geo 地理空间搜索
+
+match_auto_completion 自动补全
 
 aggs 聚合查询：分组聚合、指标聚合、分组嵌套聚合；
 
@@ -74,45 +83,15 @@ aggs 聚合查询：分组聚合、指标聚合、分组嵌套聚合；
 
 
 
-### 亮点介绍
+📖 **在线文档**
 
-**操作完全接口化；**
-
-**原生支持中文分词；**
-
-**支持配置同义词；**
-
-**支持自定义分词插件；**
-
-**支持精细化搜索设置；**（结果高亮、自定义返回字段、字段权重、minimum_should_match、结果按字段值排序、数据脱敏返回等）
-
-**支持生成增量索引并合并到主索引；**
-
-**支持实时索引；**
-
-**支持搜索结果filter过滤；**
-
-**支持搜索结果按字段值排序；**（按某个字段值排序、按距离排序（如果存在经纬度字段））
-
-**更合理的排序：**
-
-综合排序时，命中的词语之间越紧密，排序越靠前，例如：
-
-1，xxxx明天xxxx会xxxxxxx更好
-
-2，xxx明天会更好xxxxxxx
-
-排序后，2会在1前面
-
-**支持int递增主键、uuid主键；**
+[https://rock365.github.io/](https://rock365.github.io/) 偶尔无法访问，多刷新几次就行
 
 
 
-### 快速安装使用
+🚀 **快速安装使用**
 
-##### 安装导入WindSearch
-
-**环境要求：**
+*环境要求：*
 
 * UTF-8编码
 * PHP ≥7.3
@@ -120,7 +99,9 @@ aggs 聚合查询：分组聚合、指标聚合、分组嵌套聚合；
 * PDO Extension
 * SQLite Extension
 
-**开始安装：**
+
+
+*下载引入：*
 将WindSearch下载到本地你喜欢的文件夹，这是一个纯PHP的全文检索引擎
 
 再引入入口文件，注意具体文件路径
@@ -130,7 +111,9 @@ require_once 'yourdirname/vendor/autoload.php';
 ```
 至此，安装已经全部完成，再无其它任何配置，快不快？
 
-##### 建索引库
+
+
+*建索引库：*
 
 复制修改粘贴即可，跟mysql建表差不多
 
@@ -186,7 +169,9 @@ if ($is_index) {
 //创建索引库
 $Wind->createIndex($mapping);
 ```
-##### 导入数据
+
+
+*导入数据：*
 
 ```php
 //实例化引擎
@@ -205,7 +190,9 @@ foreach ($result as $v) {
 // 批量写入文件保存
 $Wind->batchWrite();
 ```
-##### 构建索引
+
+
+*构建索引：*
 
 ```php
 // 数据导入结束后，接着可立即调用此方法构建索引
@@ -213,7 +200,9 @@ $Wind->batchWrite();
 $Wind->buildIndex();
 ```
 
-##### 开始搜索
+
+
+*开始搜索：*
 
 ```php
 //实例化引擎
@@ -243,15 +232,17 @@ $res = $Wind->search($query, $page, $listRows);
 // 返回的最终结果，可直接渲染到前台页面
 $resArr = $res['result']['_source'];
 ```
-### 结语
 
-以上流程可以快速实现一个PHP全文检索，当然，这些只是餐前甜点，WindSearch还有更深入、更丰富的搜索功能等你挖掘：
+
+以上流程可以快速实现一个PHP全文检索，当然，这些只是餐前小菜，WindSearch还有更深入、更丰富的搜索功能等你挖掘：
 
 在线开发文档：[https://rock365.github.io/](https://rock365.github.io/) 偶尔访问不稳定，多刷新几次即可
 
 点个star吧亲亲O(∩_∩)O~~谢谢大家！
 
 
+
+*联系方式：*
 
 微信：azg555666
 
