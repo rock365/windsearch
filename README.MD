@@ -1,12 +1,13 @@
 # WindSearch 🔍 [![PHP Version](https://img.shields.io/badge/PHP-7.3%2B-brightgreen)]()
 
-### 让中文搜索变得像呼吸一样简单
+### 让中文搜索变得像呼吸一样简单（新功能开发中...）
 
 [![AGPL License](https://img.shields.io/github/license/rock365/windsearch)](LICENSE) [![GitHub Stars](https://img.shields.io/github/stars/rock365/windsearch?style=social)](https://github.com/rock365/windsearch/stargazers)
 
 
 
 🚀 **PHP开发者苦ES久矣！**  
+
 还在为Elasticsearch的复杂配置头疼？WindSearch给您：
 
 - **零依赖**：无需Java环境，告别JVM调优噩梦
