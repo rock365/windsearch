@@ -1,4 +1,4 @@
-# WindSearch 🔍 [![PHP Version](https://img.shields.io/badge/PHP-7.3%2B-brightgreen)]()
+# WindSearch 2.0 🔍 [![PHP Version](https://img.shields.io/badge/PHP-7.3%2B-brightgreen)]()
 
 ### 让中文搜索变得像呼吸一样简单（新功能开发中...）
 

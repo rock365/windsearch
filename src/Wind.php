@@ -8,7 +8,7 @@
 // +----------------------------------------------------------------------
 // | Author: https://github.com/rock365
 // +----------------------------------------------------------------------
-// | Version: 1.0
+// | Version: 2.0
 // +----------------------------------------------------------------------
 
 
@@ -452,6 +452,345 @@ class Wind extends Func
         $this->initSqlite();
     }
 
+    private $isValidFastIndex = false;
+    private $fastTermsContainer = [];
+    public function fastIndexer($text = '', $primarykey = '')
+    {
+        if (!$this->isValidFastIndex) {
+
+            $dir = $this->indexDir . $this->IndexName . '/fastIndex/';
+            if (!is_dir($dir)) {
+                mkdir($dir, 0777, true);
+                $this->isValidFastIndex = true;
+            } else {
+                $this->isValidFastIndex = true;
+            }
+        }
+        $terms = $this->fastAnalyzer($text, $len = 2);
+        foreach ($terms as $v) {
+            $fir = $this->getFirstLetter($v);
+            $this->fastTermsContainer[$fir][] = $v . ' ' . $primarykey . PHP_EOL;
+        }
+    }
+
+    public function fastBatchWrite()
+    {
+
+        $indexSegDir = $this->indexDir . $this->IndexName . '/fastIndex/';
+        if (!is_dir($indexSegDir)) {
+            mkdir($indexSegDir, 0777);
+        }
+        foreach ($this->fastTermsContainer as $k => $v) {
+            $v = implode('', $v);
+            file_put_contents($indexSegDir . $k . '.index', $v, FILE_APPEND);
+        }
+    }
+
+    public function deleteFastIndex()
+    {
+        $indexSegDir = $this->indexDir . $this->IndexName . '/fastIndex/';
+        $this->empty_dir($indexSegDir);
+        file_put_contents($this->indexDir . $this->IndexName . '/summarizedData/fast_dp.index', '');
+        $field = '_fastIndex';
+        $dir = $this->indexDir . $this->IndexName . '/index/' . $field . '.db';
+        if (is_file($dir)) {
+            unlink($dir);
+        }
+        if (is_file($dir . '-journal')) {
+            unlink($dir . '-journal');
+        }
+        sleep(1);
+        return true;
+    }
+
+    private function fastAnalyzer($string, $len = 2)
+    {
+        $string = strtolower($string);
+        $terms = $this->fastSegmentNgram($string, $len);
+        $terms = array_unique(array_filter($terms));
+        return $terms;
+    }
+
+    private function fastSegmentNgram($str, $len = 3)
+    {
+        $resultArr = [];
+        $regx = '/([\x{4E00}-\x{9FA5}]+)|([\x{3040}-\x{309F}]+)|([\x{30A0}-\x{30FF}]+)|([\x{AC00}-\x{D7AF}]+)|([a-zA-Z0-9\.]+)|([\-\_\+\!\@\#\$\%\^\&\*\(\)\|\}\{\“\\”：\"\:\?\>\<\,\.\/\'\;\[\]\~\～\！\@\#\￥\%\…\&\*\（\）\—\+\|\}\{\？\》\《\·\。\，\℃\、\.\~\～\；])/u'; //中日韩 数字字母 标点符号
+        $regx_zh = '(^[\x{4e00}-\x{9fa5}]+$)'; //中文
+
+        if (preg_match_all($regx, $str,  $mat)) {
+            $all = $mat[0]; //全部
+            $zh = $mat[1]; //中文
+
+            foreach ($all as $blk) {
+                if (mb_strlen($blk, 'UTF-8') == 0) {
+                    continue;
+                }
+
+                //允许进行分词的内容 中文
+                if (preg_match('/' . $regx_zh . '/u', $blk)) {
+
+                    // ngram 分词方法
+                    $words = $this->fastnGram($blk, $len);
+                    if (is_array($words)) {
+                        $resultArr = array_merge($resultArr, $words);
+                    }
+                } //不允许分词的内容 数字 字母
+                else if (preg_match('/[a-zA-Z0-9]+/u', $blk)) {
+
+                    $resultArr[] = $blk;
+                }
+                //其它内容 日文 韩文 符号 ...
+                else {
+                    for ($w = 0; $w < mb_strlen($blk, 'utf-8'); ++$w) {
+                        $resultArr[] = mb_substr($blk, $w, 1, 'utf-8');
+                    }
+                }
+            }
+        }
+
+        return $resultArr;
+    }
+
+    private function fastnGram($str, $len = 3)
+    {
+        // 字符串长度
+        $strLen = strlen($str);
+        // 截取窗口的字符字节数
+        $len = $len * 3;
+
+        if ($strLen <= $len) {
+            return [$str];
+        }
+        $resArr = [];
+        $endPos = $strLen - $len + 1;
+
+        for ($i = 0; $i < $endPos; $i += 3) {
+            $resArr[] = substr($str, $i, $len);
+        }
+
+        return $resArr;
+    }
+
+    private function getDirFiles($dir)
+    {
+        $files = [];
+        if (is_dir($dir)) {
+            $scandir = scandir($dir);
+            foreach ($scandir as $k) {
+                if ($k == '.' || $k == '..') {
+                    continue;
+                }
+                $files[] = $k;
+            }
+        }
+        return $files;
+    }
+
+    public function fastBuildPostingListIndex()
+    {
+
+        file_put_contents($this->indexDir . $this->IndexName . '/summarizedData/fast_dp.index', '');
+
+        $indexSegDir = $this->indexDir . $this->IndexName . '/fastIndex/';
+
+        $files = $this->getDirFiles($indexSegDir);
+
+        foreach ($files as $f) {
+            $tempArr = [];
+            $file = $indexSegDir . $f;
+
+            if (is_file($file)) {
+
+                $rows = explode(PHP_EOL, file_get_contents($file));
+
+                foreach ($rows as $f => $d) {
+                    list($term, $id) = explode(' ', $d);
+                    if ($term !== '' && $id !== '') {
+                        if (!isset($tempArr[$term])) {
+                            $tempArr[$term] = $id;
+                        } else {
+                            $tempArr[$term] .= ',' . $id;
+                        }
+                    }
+                }
+                $i = 0;
+                $temp = [];
+                foreach ($tempArr as $k => $v) {
+                    $v = $this->systemCompression($v);
+                    ++$i;
+                    $temp[] = $k . '|' . $v . PHP_EOL;
+                    if ($i % 10000 == 0) {
+                        file_put_contents($this->indexDir . $this->IndexName . '/summarizedData/fast_dp.index', implode('', $temp), FILE_APPEND);
+                        $temp = [];
+                    }
+                }
+                file_put_contents($this->indexDir . $this->IndexName . '/summarizedData/fast_dp.index', implode('', $temp), FILE_APPEND);
+                $temp = [];
+                $tempArr = [];
+            }
+        }
+    }
+
+    public function fastBuildIndex()
+    {
+        $summarizedData = $this->indexDir . $this->IndexName . '/summarizedData/';
+        if (!is_dir($summarizedData)) {
+            mkdir($summarizedData, 0777, true);
+        }
+        $allIndex  = $this->indexDir . $this->IndexName . '/index/';
+        if (!is_dir($allIndex)) {
+            mkdir($allIndex, 0777, true);
+        }
+
+        $this->fastBuildPostingListIndex();
+
+        $field = '_fastIndex';
+        $dir = $this->indexDir . $this->IndexName . '/index/' . $field . '.db';
+        if (is_file($dir)) {
+            unlink($dir);
+        }
+        if (is_file($dir . '-journal')) {
+            unlink($dir . '-journal');
+        }
+        $pdo = new PDO_sqlite($dir);
+
+        $sql_table = "CREATE TABLE IF NOT EXISTS $field (
+				id INTEGER PRIMARY KEY,
+				term TEXT,
+				ids TEXT)";
+        $pdo->exec($sql_table);
+        $sql_index = "CREATE UNIQUE INDEX IF NOT EXISTS idx_" . $field . "_term ON " . $field . "(term);";
+        $pdo->exec($sql_index);
+
+
+        $storageDir = $this->getStorageDir();
+        $specArr = ['\\', PHP_EOL];
+        $file = fopen($storageDir .  'summarizedData/fast_dp.index', "r");
+        $i = 0;
+        $pdo->beginTransaction();
+        $rows = $this->yield_fread_row();
+        foreach ($rows($storageDir .  'summarizedData/fast_dp.index') as $line) {
+            $line = trim($line);
+            if ($line != '') {
+                ++$i;
+                list($q, $d) = explode('|', $line);
+                $d = trim($d);
+                if ($q !== '') {
+                    if (in_array($q, $specArr)) {
+                        continue;
+                    }
+                    $sql = "insert into $field (term,ids)values('$q','$d')";
+                    $pdo->exec($sql);
+                    if (($i % 10000) == 0) {
+                        $pdo->commit();
+                        $pdo->beginTransaction();
+                    }
+                }
+            }
+        }
+        $pdo->commit();
+    }
+
+    private function fastSearchIndex($terms, $page, $listRows)
+    {
+
+        $dir = $this->indexDir . $this->IndexName . '/index/_fastIndex.db';
+        $id_arr = [];
+        $pdo = new PDO_sqlite($dir);
+        $termsStr = "'" . implode("','", $terms) . "'";
+        $sql = "select * from _fastIndex where term in($termsStr)";
+        $resAll = $pdo->getAll($sql);
+        if ($resAll) {
+            foreach ($resAll as $v) {
+                $ids = $v['ids'];
+                $term = $v['term'];
+                $ids_gzinf = $this->systemDecompression($ids);
+                $exp = explode(',', $ids_gzinf);
+                $id_arr[] = $exp;
+            }
+        }
+
+        $id_arr_score = [];
+        $res_total = 0;
+
+        if (!empty($id_arr)) {
+
+            $ids = array_merge(...$id_arr);
+            $ids = array_filter($ids);
+
+            $id_arr_count = array_count_values($ids);
+            $res_total = count($id_arr_count);
+
+            if (count($terms) > 1) {
+                arsort($id_arr_count);
+            }
+
+            $id_slice =    array_slice($id_arr_count, 0, 2000, true);
+
+            unset($id_arr_count);
+        }
+
+        $id_arr_score = $id_slice;
+        $id_arr =  array_keys($id_slice);
+
+        if (!isset($id_arr[0])) {
+            $id_arr = array_values($id_arr);
+        }
+
+
+
+        $id_score = [];
+        $curr_page_id_arr = [];
+        $qs = ($page - 1) * $listRows;
+        $js = ($page - 1) * $listRows + $listRows;
+
+        for ($i = $qs; $i < $js; ++$i) {
+
+            if (!isset($id_arr[$i])) {
+                continue;
+            }
+
+            array_push($curr_page_id_arr, $id_arr[$i]);
+            $id_score[$id_arr[$i]] = $id_arr_score[$id_arr[$i]];
+        }
+
+
+        if (count($curr_page_id_arr) > 1) {
+            $id_str = implode(',', $curr_page_id_arr);
+        } else {
+            $id_str = isset($curr_page_id_arr[0]) ? $curr_page_id_arr[0] : '';
+        }
+
+
+        $intersection = array(
+            'id_str' => $id_str,
+            'id_score' => $id_score,
+            'curr_listRows_real' => count($curr_page_id_arr),
+        );
+
+        $info = array(
+            'total' => isset($res_total) ? $res_total : 0,
+        );
+
+        $result = array(
+            'intersection' => $intersection,
+            'info' => $info,
+        );
+
+
+        return $result;
+    }
+
+    public function fastSearch($text, $page, $list_rows)
+    {
+        $page = $page + 0;
+        $page = ($page > 20) ? 20 : $page;
+
+        $terms = $this->fastAnalyzer($text, 2);
+        $res = $this->fastSearchIndex($terms, $page, $list_rows);
+        return $res;
+    }
+
     private function getPrimarykey()
     {
         $primarykey = isset($this->mapping['properties']['primarykey']) ? $this->mapping['properties']['primarykey'] : false;
@@ -619,29 +958,9 @@ class Wind extends Func
         $this->loadAnalyzer();
         $synonymDir = dirname(__FILE__) . '/windIndexCore/synonym/';
         $semiFinishedDir = dirname(__FILE__) . '/windIndexCore/synonym/semiFinished/';
-        self::del_dir($semiFinishedDir);
+        self::empty_dir($semiFinishedDir);
         sleep(1);
-        if (!is_dir($semiFinishedDir)) {
-            mkdir($semiFinishedDir);
-        }
-        $zm = array(
-            'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y',
-            'Z'
-        );
-        $zm2 = array(
-            'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y',
-            'Z'
-        );
-        foreach ($zm as $v) {
-            foreach ($zm2 as $c) {
-                if (!is_dir($semiFinishedDir . $v . '/')) {
-                    mkdir($semiFinishedDir . $v . '/');
-                }
-                if (!is_dir($semiFinishedDir . $v . '/' . $c . '/')) {
-                    mkdir($semiFinishedDir . $v . '/' . $c . '/');
-                }
-            }
-        }
+
         $a = file_get_contents($synonymDir . 'source/synonym.txt');
         $a2 = file_get_contents($synonymDir . 'source/synonymCustom.txt');
         $a = $a . PHP_EOL . $a2;
@@ -675,9 +994,9 @@ class Wind extends Func
                         }
                     }
                     $szm = $this->getFirstLetter($c_arr[$i]);
-                    $szm2 = $this->getFirstLetter(substr($c_arr[$i], 3, 3) ? substr($c_arr[$i], 3, 3) : 'U');
+                    // $szm2 = $this->getFirstLetter(substr($c_arr[$i], 3, 3) ? substr($c_arr[$i], 3, 3) : 'U');
                     $zfc = $arr2[$c_arr[$i]];
-                    file_put_contents($semiFinishedDir . $szm . '/' . $szm2 . '/synonymDp.index', $c_arr[$i] . '/' . $zfc . PHP_EOL, FILE_APPEND);
+                    file_put_contents($semiFinishedDir . $szm . '.index', $c_arr[$i] . '/' . $zfc . PHP_EOL, FILE_APPEND);
                 }
             } else if (stristr($v, '|') == true) {
                 $c_arr = explode('|', $v);
@@ -690,41 +1009,41 @@ class Wind extends Func
                     $arr2[$c_arr[0]] = $arr2[$c_arr[0]] . ',' . $c_arr[1];
                 }
                 $szm = $this->getFirstLetter($c_arr[0]);
-                $szm2 = $this->getFirstLetter(substr($c_arr[0], 3, 3) ? substr($c_arr[0], 3, 3) : 'U');
+                // $szm2 = $this->getFirstLetter(substr($c_arr[0], 3, 3) ? substr($c_arr[0], 3, 3) : 'U');
                 $zfc = $arr2[$c_arr[0]];
-                file_put_contents($semiFinishedDir . $szm . '/' . $szm2 . '/synonymDp.index', $c_arr[0] . '/' . $zfc . PHP_EOL, FILE_APPEND);
+                file_put_contents($semiFinishedDir . $szm . '.index', $c_arr[0] . '/' . $zfc . PHP_EOL, FILE_APPEND);
             }
         }
         $arr_ = [];
-        foreach ($zm as $v) {
-            foreach ($zm2 as $c) {
-                $dir = $semiFinishedDir . $v . '/' . $c . '/synonymDp.index';
-                if (!is_file($dir)) {
-                    continue;
-                }
-                $re = file_get_contents($dir);
-                $re = explode(PHP_EOL, $re);
-                foreach ($re as $s) {
-                    if (stristr($s, '/')) {
-                        $c_arr = explode('/', $s);
-                        $f = $c_arr[1];
-                        if (stristr($f, ',')) {
-                            $f_arr = explode(',', $f);
-                            $f_arr = array_filter($f_arr);
-                            foreach ($f_arr as $k) {
-                                $k_arr = $this->segment($k);
-                                $k_str = implode(',', $k_arr);
-                                if (!isset($arr_[$c_arr[0]])) {
-                                    $arr_[$c_arr[0]] = $k_str;
-                                } else {
-                                    $arr_[$c_arr[0]] = $arr_[$c_arr[0]] . '|' . $k_str;
-                                }
+
+        $files = $this->getDirFiles($semiFinishedDir);
+
+        foreach ($files as $fi) {
+            $dir = $semiFinishedDir . $fi;
+            if (!is_file($dir)) {
+                continue;
+            }
+            $re = explode(PHP_EOL, file_get_contents($dir));
+            foreach ($re as $s) {
+                if (stristr($s, '/')) {
+                    $c_arr = explode('/', $s);
+                    $f = $c_arr[1];
+                    if (stristr($f, ',')) {
+                        $f_arr = explode(',', $f);
+                        $f_arr = array_filter($f_arr);
+                        foreach ($f_arr as $k) {
+                            $k_arr = $this->segment($k);
+                            $k_str = implode(',', $k_arr);
+                            if (!isset($arr_[$c_arr[0]])) {
+                                $arr_[$c_arr[0]] = $k_str;
+                            } else {
+                                $arr_[$c_arr[0]] = $arr_[$c_arr[0]] . '|' . $k_str;
                             }
-                        } else {
-                            $f_arr = $this->segment($f);
-                            $f_str = implode(',', $f_arr);
-                            $arr_[$c_arr[0]] = $f_str;
                         }
+                    } else {
+                        $f_arr = $this->segment($f);
+                        $f_str = implode(',', $f_arr);
+                        $arr_[$c_arr[0]] = $f_str;
                     }
                 }
             }
@@ -740,7 +1059,7 @@ class Wind extends Func
             $res[] = $v . '/' . $c;
         }
         file_put_contents($synonymDir . 'synonymDp/synonymMap.index', implode(PHP_EOL, $res));
-        self::del_dir($semiFinishedDir);
+        self::empty_dir($semiFinishedDir);
         $field = '_synonym';
         $dir = $synonymDir . 'synonymDp/' . $field . '.db';
         if (is_file($dir)) {
@@ -3727,7 +4046,7 @@ class Wind extends Func
         }
         if (!empty($this->stringPreprocessingContainer)) {
             $arrresult = array_merge($arrresult, $this->stringPreprocessingContainer);
-            $this->stringPreprocessingContainer = []; //
+            $this->stringPreprocessingContainer = [];
         }
         if (!empty($arrresult)) {
             $arrresult = array_unique($arrresult);
@@ -3760,7 +4079,7 @@ class Wind extends Func
         }
         if (!empty($this->stringPreprocessingContainer)) {
             $arrresult = array_merge($arrresult, $this->stringPreprocessingContainer);
-            $this->stringPreprocessingContainer = []; //
+            $this->stringPreprocessingContainer = [];
         }
         if (!empty($arrresult)) {
             $arrresult = array_unique($arrresult);
@@ -4226,10 +4545,7 @@ class Wind extends Func
                 }
             }
         }
-        $zm = array(
-            'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y',
-            'Z'
-        );
+       
         foreach ($this->mapping['properties']['field'] as $fd) {
             $field = $fd['name'];
             $type = isset($fd['type']) ? $fd['type'] : '';
@@ -4262,13 +4578,14 @@ class Wind extends Func
                     }
                 }
                 $indexSegDir = $this->indexDir . $this->IndexName . '/makeIndexSeg/';
-                foreach ($zm as $v) {
-                    if (isset($this->segword[$field][$v])) {
-                        $open = fopen($indexSegDir . $field . '/terms/' . $v . '.index', "a");
-                        fwrite($open, implode('', $this->segword[$field][$v]));
+                if (isset($this->segword[$field])) {
+                    foreach ($this->segword[$field] as $h => $list) {
+                        $open = fopen($indexSegDir . $field . '/terms/' . $h . '.index', "a");
+                        fwrite($open, implode('', $list));
                         fclose($open);
                     }
                 }
+
             }
         }
         if (!empty($this->mapping['properties']['auto_completion_field'])) {
@@ -4309,14 +4626,14 @@ class Wind extends Func
                     }
                 } else {
 
-
-                    foreach ($zm as $v) {
-                        if (isset($this->segword[$field][$v])) {
-                            $open = fopen($incrementIndexSegDir . $v . '.index', "a");
-                            fwrite($open, implode('', $this->segword[$field][$v]));
+                    if (isset($this->segword[$field])) {
+                        foreach ($this->segword[$field] as $h => $list) {
+                            $open = fopen($incrementIndexSegDir . $h . '.index', "a");
+                            fwrite($open, implode('', $list));
                             fclose($open);
                         }
                     }
+                    
                 }
             }
             if (!empty($this->mapping['properties']['auto_completion_field'])) {
@@ -4383,73 +4700,57 @@ class Wind extends Func
     private function buildPostingListWholeIndex($field)
     {
         file_put_contents($this->indexDir . $this->IndexName . '/summarizedData/dp_' . $field . '.index', '');
-        $arr_pice = range(1, $this->mapping['properties']['param']['indexSegNum']);
+
         $indexSegDir = $this->indexDir . $this->IndexName . '/makeIndexSeg/' . $field . '/terms/';
-        $zm = array(
-            'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y',
-            'Z'
-        );
 
+        $files = $this->getDirFiles($indexSegDir);
 
-
-
-
-
-
-
-
-
-
-
-
-
-        foreach ($zm as $z) {
+        foreach ($files as $fi) {
             $PostingListArr = [];
-            if (is_dir($indexSegDir)) {
-                $file = $indexSegDir . $z . '.index';
-                if (is_file($file)) {
-                    $file = fopen($file, "r");
-                    $container = [];
-                    while ($line = fgets($file)) {
-                        $line = trim($line);
-                        if ($line != '') {
-                            $arr = explode(' ', $line);
-                            $term = $arr[0];
-                            $id = $arr[1];
-                            if (!isset($container[$term]) && ($id != '')) {
-                                $container[$term] = $id;
-                            } else {
-                                $container[$term] .= ',' . $id;
-                            }
-                        }
-                    }
-                    foreach ($container as $query => $v) {
-                        $v = trim($v, ',');
-                        if (!isset($PostingListArr[$query])) {
-                            $PostingListArr[$query] = $v;
+            $file = $indexSegDir . $fi;
+
+            if (is_file($file)) {
+                $file = fopen($file, "r");
+                $container = [];
+                while ($line = fgets($file)) {
+                    $line = trim($line);
+                    if ($line != '') {
+                        $arr = explode(' ', $line);
+                        $term = $arr[0];
+                        $id = $arr[1];
+                        if (!isset($container[$term]) && ($id != '')) {
+                            $container[$term] = $id;
                         } else {
-                            $PostingListArr[$query] = $PostingListArr[$query] . ',' . $v;
-                        }
-                        unset($container[$query]);
-                    }
-                    $resContainer = [];
-                    $count = 1;
-                    foreach ($PostingListArr as $k => $v) {
-                        ++$count;
-                        $v_arr = explode(',', $v);
-                        $arr_slice = $v_arr;
-                        $arr_slice_str = $this->differentialCompression($arr_slice);
-                        $id_str = $this->systemCompression($arr_slice_str);
-                        $resContainer[] = $k . '|' . $id_str;
-                        if ($count % 10000 == 0) {
-                            file_put_contents($this->indexDir . $this->IndexName . '/summarizedData/dp_' . $field . '.index', implode(PHP_EOL, $resContainer) . PHP_EOL, FILE_APPEND);
-                            $resContainer = [];
+                            $container[$term] .= ',' . $id;
                         }
                     }
-                    file_put_contents($this->indexDir . $this->IndexName . '/summarizedData/dp_' . $field . '.index', implode(PHP_EOL, $resContainer) . PHP_EOL, FILE_APPEND);
-                    $resContainer = [];
-                    $container = [];
                 }
+                foreach ($container as $query => $v) {
+                    $v = trim($v, ',');
+                    if (!isset($PostingListArr[$query])) {
+                        $PostingListArr[$query] = $v;
+                    } else {
+                        $PostingListArr[$query] = $PostingListArr[$query] . ',' . $v;
+                    }
+                    unset($container[$query]);
+                }
+                $resContainer = [];
+                $count = 1;
+                foreach ($PostingListArr as $k => $v) {
+                    ++$count;
+                    $v_arr = explode(',', $v);
+                    $arr_slice = $v_arr;
+                    $arr_slice_str = $this->differentialCompression($arr_slice);
+                    $id_str = $this->systemCompression($arr_slice_str);
+                    $resContainer[] = $k . '|' . $id_str;
+                    if ($count % 10000 == 0) {
+                        file_put_contents($this->indexDir . $this->IndexName . '/summarizedData/dp_' . $field . '.index', implode(PHP_EOL, $resContainer) . PHP_EOL, FILE_APPEND);
+                        $resContainer = [];
+                    }
+                }
+                file_put_contents($this->indexDir . $this->IndexName . '/summarizedData/dp_' . $field . '.index', implode(PHP_EOL, $resContainer) . PHP_EOL, FILE_APPEND);
+                $resContainer = [];
+                $container = [];
             }
         }
     }
@@ -4459,107 +4760,80 @@ class Wind extends Func
     {
         file_put_contents($this->indexDir . $this->IndexName . '/summarizedData/dp_' . $field . '.index', '');
         file_put_contents($this->indexDir . $this->IndexName . '/summarizedData/dp_' . $field . '_postinglist.index', '');
-        $arr_pice = range(1, $this->mapping['properties']['param']['indexSegNum']);
+
         $indexSegDir = $this->indexDir . $this->IndexName . '/makeIndexSeg/' . $field . '/terms/';
-        $zm = array(
-            'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y',
-            'Z'
-        );
 
+        $files = $this->getDirFiles($indexSegDir);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        foreach ($zm as $z) {
+        foreach ($files as $fi) {
             $bitmapArr = [];
-            if (is_dir($indexSegDir)) {
-                $file = $indexSegDir . $z . '.index';
-                if (is_file($file)) {
-                    $file = fopen($file, "r");
-                    $container = [];
-                    while ($line = fgets($file)) {
-                        $line = trim($line);
-                        if ($line != '') {
-                            $arr = explode(' ', $line);
-                            $term = $arr[0];
-                            $id = $arr[1];
-                            if (!isset($container[$term]) && ($id != '')) {
-                                $container[$term] = $id;
-                            } else {
-                                $container[$term] .= ',' . $id;
-                            }
+            $file = $indexSegDir . $fi;
+            if (is_file($file)) {
+                $file = fopen($file, "r");
+                $container = [];
+                while ($line = fgets($file)) {
+                    $line = trim($line);
+                    if ($line != '') {
+                        $arr = explode(' ', $line);
+                        $term = $arr[0];
+                        $id = $arr[1];
+                        if (!isset($container[$term]) && ($id != '')) {
+                            $container[$term] = $id;
+                        } else {
+                            $container[$term] .= ',' . $id;
                         }
                     }
-                    foreach ($container as $term => $v) {
-                        $v = trim($v, ',');
-                        $v = explode(',', $v);
-
-                        foreach ($v as $k => $d) {
-                            $quotient = floor($d / 64);
-                            $remainder = $d % 64;
-                            if (!isset($bitmapArr[$term][$quotient])) {
-                                $bitmapArr[$term][$quotient] = 1 << (int)$remainder;
-                            } else {
-
-                                $bitmapArr[$term][$quotient] = $bitmapArr[$term][$quotient] | (1 << (int)$remainder);
-                            }
-                        }
-                    }
-                    $resContainer = [];
-                    $count = 1;
-                    foreach ($bitmapArr as $term => $v) {
-                        ++$count;
-                        ksort($v);
-                        $idShang = implode(',', array_keys($v));
-                        $idShang = $this->differentialCompression($idShang);
-                        $idYu = implode(',', array_values($v));
-                        $id_str = $this->systemCompression($idShang . '/' . $idYu);
-                        $resContainer[] = $term . '|' . $id_str;
-                        if ($count % $this->indexDataWriteBufferSize == 0) {
-                            file_put_contents($this->indexDir . $this->IndexName . '/summarizedData/dp_' . $field . '.index', implode(PHP_EOL, $resContainer) . PHP_EOL, FILE_APPEND);
-                            $resContainer = [];
-                        }
-                    }
-                    file_put_contents($this->indexDir . $this->IndexName . '/summarizedData/dp_' . $field . '.index', implode(PHP_EOL, $resContainer) . PHP_EOL, FILE_APPEND);
-                    $resContainer = [];
-                    $resContainer = [];
-                    $count = 1;
-                    foreach ($container as $k => $v) {
-                        ++$count;
-                        $v = trim($v, ',');
-                        $v_arr = explode(',', $v);
-                        $arr_slice = $v_arr;
-                        $arr_slice_str = $this->differentialCompression($arr_slice);
-                        $id_str = $this->systemCompression($arr_slice_str);
-                        $resContainer[] = $k . '|' . $id_str;
-                        if ($count % $this->indexDataWriteBufferSize == 0) {
-                            file_put_contents($this->indexDir . $this->IndexName . '/summarizedData/dp_' . $field . '_postinglist.index', implode(PHP_EOL, $resContainer) . PHP_EOL, FILE_APPEND);
-                            $resContainer = [];
-                        }
-                    }
-                    file_put_contents($this->indexDir . $this->IndexName . '/summarizedData/dp_' . $field . '_postinglist.index', implode(PHP_EOL, $resContainer) . PHP_EOL, FILE_APPEND);
-                    $resContainer = [];
-                    $container = [];
                 }
+                foreach ($container as $term => $v) {
+                    $v = trim($v, ',');
+                    $v = explode(',', $v);
+
+                    foreach ($v as $k => $d) {
+                        $quotient = floor($d / 64);
+                        $remainder = $d % 64;
+                        if (!isset($bitmapArr[$term][$quotient])) {
+                            $bitmapArr[$term][$quotient] = 1 << (int)$remainder;
+                        } else {
+
+                            $bitmapArr[$term][$quotient] = $bitmapArr[$term][$quotient] | (1 << (int)$remainder);
+                        }
+                    }
+                }
+                $resContainer = [];
+                $count = 1;
+                foreach ($bitmapArr as $term => $v) {
+                    ++$count;
+                    ksort($v);
+                    $idShang = implode(',', array_keys($v));
+                    $idShang = $this->differentialCompression($idShang);
+                    $idYu = implode(',', array_values($v));
+                    $id_str = $this->systemCompression($idShang . '/' . $idYu);
+                    $resContainer[] = $term . '|' . $id_str;
+                    if ($count % $this->indexDataWriteBufferSize == 0) {
+                        file_put_contents($this->indexDir . $this->IndexName . '/summarizedData/dp_' . $field . '.index', implode(PHP_EOL, $resContainer) . PHP_EOL, FILE_APPEND);
+                        $resContainer = [];
+                    }
+                }
+                file_put_contents($this->indexDir . $this->IndexName . '/summarizedData/dp_' . $field . '.index', implode(PHP_EOL, $resContainer) . PHP_EOL, FILE_APPEND);
+                $resContainer = [];
+                $resContainer = [];
+                $count = 1;
+                foreach ($container as $k => $v) {
+                    ++$count;
+                    $v = trim($v, ',');
+                    $v_arr = explode(',', $v);
+                    $arr_slice = $v_arr;
+                    $arr_slice_str = $this->differentialCompression($arr_slice);
+                    $id_str = $this->systemCompression($arr_slice_str);
+                    $resContainer[] = $k . '|' . $id_str;
+                    if ($count % $this->indexDataWriteBufferSize == 0) {
+                        file_put_contents($this->indexDir . $this->IndexName . '/summarizedData/dp_' . $field . '_postinglist.index', implode(PHP_EOL, $resContainer) . PHP_EOL, FILE_APPEND);
+                        $resContainer = [];
+                    }
+                }
+                file_put_contents($this->indexDir . $this->IndexName . '/summarizedData/dp_' . $field . '_postinglist.index', implode(PHP_EOL, $resContainer) . PHP_EOL, FILE_APPEND);
+                $resContainer = [];
+                $container = [];
             }
         }
     }
@@ -4569,7 +4843,7 @@ class Wind extends Func
         file_put_contents($this->indexDir . $this->IndexName . '/summarizedData/increment_dp_' . $field . '.index', '');
         $incrementIndexSegDir = $this->indexDir . $this->IndexName . '/makeIncrementIndexSeg/' . $field . '/terms/';
         if (!is_dir($incrementIndexSegDir)) {
-            mkdir($incrementIndexSegDir, 0777);
+            mkdir($incrementIndexSegDir, 0777, true);
         }
         if (is_dir($incrementIndexSegDir)) {
             $file_list = scandir($incrementIndexSegDir);
@@ -5557,11 +5831,6 @@ class Wind extends Func
             }
 
 
-
-
-
-
-
             if ($type === 'text' || $type === 'keyword' || $type === 'geo_point') {
                 $dir = $this->indexDir . $this->IndexName . '/index/' . $field . '.db';
                 if (is_file($dir)) {
@@ -5752,13 +6021,6 @@ class Wind extends Func
                 $pdo_autoCompletion->commit();
             }
         }
-
-
-
-
-
-
-
 
 
 
@@ -6848,6 +7110,7 @@ class Wind extends Func
 
     private function match($queryList)
     {
+        
         $field = $queryList['field'];
         $mode = $queryList['mode'];
         $operator = $queryList['operator'];
