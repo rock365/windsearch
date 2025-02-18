@@ -17,7 +17,7 @@
 ```php
 // 实例化对象
 $Wind = new \WindSearch\Index\Wind('test'); //test 当前索引库的名称
-// 清空之前的数据（如果之前使用超简模式导入过数据）
+// 清空之前的数据（如果之前使用即用模式导入过数据）
 $Wind->deleteFastIndex();
 // 批次导入数据
 // $res 是从数据库查询的数据
