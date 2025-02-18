@@ -8,9 +8,41 @@
 
 👏 **功能新增**
 
-2.0版本新增“即用模式”，简单搜索场景下，导入、搜索等操作，更加简单直接。
+2.0版本新增“**即用模式**”，简单搜索场景下，导入、搜索等操作，更加简单直接，无需任何配置。
 
+**导入数据**
 
+```php
+// 实例化对象
+$Wind = new \WindSearch\Index\Wind('test'); //test 当前索引库的名称
+// 清空之前的数据（如果之前使用超简模式导入过数据）
+$Wind->deleteFastIndex();
+// 批次导入数据
+// $res 是从数据库查询的数据
+foreach($res as $v){
+    $text = $v['title'];
+    $primarykey = $v['id'];
+    // $text是需要搜索的具体内容，比如title；$primarykey是主键值，比如id的值
+	$Wind->fastIndexer($text, $primarykey);
+}
+//每导入一批数据，就调用此方法进行保存
+$Wind->fastBatchWrite();
+
+// 所有数据全部导入完成后，接着构建索引（不一定非得紧接着调用，也可以在其它地方单独调用）
+$Wind->fastBuildIndex();
+
+```
+
+**开始搜索**
+
+```php
+// 开始搜索
+$Wind = new \WindSearch\Index\Wind('test');
+// 调用搜索方法
+// $page 第几页 $listRows 每页多少条
+$res = $Wind->fastSearch($text,$page,$listRows)
+// $res：返回的主键（比如id）集合，你可以使用id集合从MySQL等数据库查询原始数据
+```
 
 🚀 **PHP开发者苦ES久矣！**  
 
