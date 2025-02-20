@@ -4545,7 +4545,7 @@ class Wind extends Func
                 }
             }
         }
-       
+
         foreach ($this->mapping['properties']['field'] as $fd) {
             $field = $fd['name'];
             $type = isset($fd['type']) ? $fd['type'] : '';
@@ -4585,7 +4585,6 @@ class Wind extends Func
                         fclose($open);
                     }
                 }
-
             }
         }
         if (!empty($this->mapping['properties']['auto_completion_field'])) {
@@ -4633,7 +4632,6 @@ class Wind extends Func
                             fclose($open);
                         }
                     }
-                    
                 }
             }
             if (!empty($this->mapping['properties']['auto_completion_field'])) {
@@ -7110,7 +7108,7 @@ class Wind extends Func
 
     private function match($queryList)
     {
-        
+
         $field = $queryList['field'];
         $mode = $queryList['mode'];
         $operator = $queryList['operator'];
@@ -7472,6 +7470,10 @@ class Wind extends Func
                 'operator' => $operator,
                 'minimum_should_match' => $minimum_should_match,
             ];
+            $fieldType= $this->getFieldType($fd);
+            if(($fieldType!=='keyword') && ($fieldType!=='text')){
+                $this->throwWindException($fd . ' 字段类型为'.$fieldType.',不支持搜索', 0);
+            }
             if ($this->primarykeyType == 'Int_Incremental') {
                 $isKeyWordField = $this->isKeyWordField($fd);
                 if ($isKeyWordField) {
@@ -10720,6 +10722,8 @@ class Wind extends Func
     {
         $this->queryList = $queryList;
         $mode = $queryList['mode'];
+
+        
         if ($mode == 'match' || $mode == 'match_terms' || $mode == 'match_phrase' || $mode == 'match_prefix' || $mode == 'match_suffix' || $mode == 'match_prefix_suffix' || $mode == 'match_fuzzy') {
             if ($mode == 'match_prefix') {
                 return $this->match_prefix($queryList);
@@ -10730,11 +10734,16 @@ class Wind extends Func
             } else if ($mode == 'match_fuzzy') {
                 return $this->match_fuzzy($queryList);
             } else {
+                if (!$this->isField($queryList['field'])) {
+                    $this->throwWindException($queryList['field'] . ' 字段不存在', 0);
+                }
+
                 if ($this->primarykeyType == 'Int_Incremental') {
                     $isKeyWordField = $this->isKeyWordField($queryList['field']);
-                    if ($isKeyWordField) {
+                    $filedType = $this->getFieldType($queryList['field']);
+                    if ($filedType === 'keyword') {
                         return $this->postingListMatch($queryList);
-                    } else {
+                    } else if ($filedType === 'text') {
                         if (isset($queryList['filter']['conditions']) || isset($queryList['filter']['range']) || (isset($queryList['sort']) && !empty($queryList['sort']) && !isset($queryList['sort']['_score']))) {
                             if (isset($queryList['fc_arr']) && count($queryList['fc_arr']) > 1) {
                                 $queryList['minimum_should_match'] = (isset($queryList['minimum_should_match']) && $queryList['minimum_should_match'] !== false) ? $queryList['minimum_should_match'] : 2;
@@ -10745,8 +10754,14 @@ class Wind extends Func
 
                             return $this->match($queryList);
                         }
+                    } else {
+                        $this->throwWindException($queryList['field'] . ' 字段未被索引', 0);
                     }
                 } else {
+                    $filedType = $this->getFieldType($queryList['field']);
+                    if (($filedType !== 'keyword') && ($filedType !== 'text')) {
+                        $this->throwWindException($queryList['field'] . ' 字段未被索引', 0);
+                    }
                     if (isset($queryList['filter']['conditions']) || isset($queryList['filter']['range']) || (isset($queryList['sort']) && !empty($queryList['sort']) && !isset($queryList['sort']['_score']))) {
                         if (isset($queryList['fc_arr']) && count($queryList['fc_arr']) > 1) {
                             $queryList['minimum_should_match'] = (isset($queryList['minimum_should_match']) && $queryList['minimum_should_match'] !== false) ? $queryList['minimum_should_match'] : 2;
