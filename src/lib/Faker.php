@@ -4,31 +4,60 @@ namespace WindSearch\Core;
 
 class Faker
 {
-    private static $firstNameMale = ["John", "Michael", "David", "James", "William"];
-    private static $firstNameFemale = ["Mary", "Patricia", "Linda", "Barbara", "Elizabeth"];
-    private static $lastName = ["Smith", "Johnson", "Williams", "Brown", "Jones"];
-    private static $domains = ["a.com", "b.com", "c.com", "d.com", "e.com", 'f.com', 'g.com', 'h.com', 'i.com', 'j.com', 'k.com', 'l.com', 'm.com'];
+    private $firstNameMale = ["John", "Michael", "David", "James", "William"];
+    private $firstNameFemale = ["Mary", "Patricia", "Linda", "Barbara", "Elizabeth"];
+    private $lastName = ["Smith", "Johnson", "Williams", "Brown", "Jones"];
+    private $domains = ["a.com", "b.com", "c.com", "d.com", "e.com", 'f.com', 'g.com', 'h.com', 'i.com', 'j.com', 'k.com', 'l.com', 'm.com'];
+
+    // 保存类的唯一实例的静态变量
+    private static $instance = null;
+
+    // 私有化构造函数，防止外部实例化
+    private function __construct()
+    {
+        // 可以在这里进行初始化操作
+    }
+
+    // 私有化克隆方法，防止克隆实例
+    private function __clone()
+    {
+    }
+
+    // 私有化反序列化方法，防止反序列化创建实例
+    private function __wakeup()
+    {
+    }
+
+    // 提供一个公共的静态方法，用于获取类的唯一实例
+    public function create()
+    {
+        if (self::$instance === null) {
+            self::$instance = new Faker();
+        }
+        return self::$instance;
+    }
+
 
     // 生成随机男性名字
-    public static function firstNameMale()
+    public function firstNameMale()
     {
-        return self::$firstNameMale[array_rand(self::$firstNameMale)];
+        return $this->firstNameMale[array_rand($this->firstNameMale)];
     }
 
     // 生成随机女性名字
-    public static function firstNameFemale()
+    public function firstNameFemale()
     {
-        return self::$firstNameFemale[array_rand(self::$firstNameFemale)];
+        return $this->firstNameFemale[array_rand($this->firstNameFemale)];
     }
 
     // 生成随机姓氏
-    public static function lastName()
+    public function lastName()
     {
-        return self::$lastName[array_rand(self::$lastName)];
+        return $this->lastName[array_rand($this->lastName)];
     }
 
     // 生成随机全名（可选性别）
-    public static function fullName($gender = null)
+    public function fullName($gender = null)
     {
         $firstName = ($gender === 'male') ? self::firstNameMale() : (($gender === 'female') ? self::firstNameFemale() : (self::firstNameMale() || self::firstNameFemale()));
         $lastName = self::lastName();
@@ -36,28 +65,28 @@ class Faker
     }
 
 
-    private static $nameList = [];
+    private $nameList = [];
     // 生成随机中文人名
-    public static function name($gender = 'mix')
+    public function name($gender = 'mix')
     {
         if ($gender == 'mix') {
-            if (!isset(self::$nameList['mix'])) {
-                self::$nameList['mix'] = array_filter(explode(PHP_EOL, file_get_contents(__DIR__ . '/../windIndexCore/Chinese_character/name.txt')));
+            if (!isset($this->nameList['mix'])) {
+                $this->nameList['mix'] = array_filter(explode(PHP_EOL, file_get_contents(__DIR__ . '/../windIndexCore/Chinese_character/name.txt')));
             }
         } else if ($gender == 'male') {
-            if (!isset(self::$nameList['male'])) {
-                self::$nameList['male'] = array_filter(explode(PHP_EOL, file_get_contents(__DIR__ . '/../windIndexCore/Chinese_character/name.txt')));
+            if (!isset($this->nameList['male'])) {
+                $this->nameList['male'] = array_filter(explode(PHP_EOL, file_get_contents(__DIR__ . '/../windIndexCore/Chinese_character/name.txt')));
             }
         } else if ($gender == 'female') {
-            if (!isset(self::$nameList['female'])) {
-                self::$nameList['female'] = array_filter(explode(PHP_EOL, file_get_contents(__DIR__ . '/../windIndexCore/Chinese_character/name.txt')));
+            if (!isset($this->nameList['female'])) {
+                $this->nameList['female'] = array_filter(explode(PHP_EOL, file_get_contents(__DIR__ . '/../windIndexCore/Chinese_character/name.txt')));
             }
         }
-        return self::$nameList[$gender][array_rand(self::$nameList[$gender])];
+        return $this->nameList[$gender][array_rand($this->nameList[$gender])];
     }
 
     // 生成随机长度数字
-    public static function number($len = 10)
+    public function number($len = 10)
     {
         $first = random_int(1, 9);
         $randomNumber = '';
@@ -68,7 +97,7 @@ class Faker
     }
 
     // 生成随机手机号
-    public static function phoneNumber($len = 11)
+    public function phoneNumber($len = 11)
     {
         $beg = ['138', '139', '176', '178', '158', '159', '188', '189'];
         $randomNumber = '';
@@ -79,19 +108,19 @@ class Faker
     }
 
     // 生成随机电子邮件
-    public static function email()
+    public function email()
     {
         // $firstName = self::firstNameMale() || self::firstNameFemale();
         // $lastName = self::lastName();
-        // $domain = self::$domains[array_rand(self::$domains)];
+        // $domain = $this->domains[array_rand($this->domains)];
         // return strtolower("$firstName.$lastName@$domain");
 
-        $domain = self::$domains[array_rand(self::$domains)];
+        $domain = $this->domains[array_rand($this->domains)];
         return self::number(10) . '@' . $domain;
     }
 
     // 生成随机地址
-    public static function address()
+    public function address()
     {
         // $streetNames = ["Main", "Oak", "Pine", "Maple", "Birch"];
         // $streetTypes = ["St", "Ave", "Blvd", "Ln", "Rd"];
@@ -125,38 +154,38 @@ class Faker
     }
 
     // 生成随机布尔值
-    public static function boolean()
+    public function boolean()
     {
         return rand(0, 1) === 1;
     }
 
-    private static $Chinese_character = [];
+    private $Chinese_character = [];
     // 生成随机文本
-    public static function text($type = 'zh', $length = 100)
+    public function text($type = 'zh', $length = 100)
     {
         if ($type == 'zh') {
-            if (!isset(self::$Chinese_character['zh'])) {
-                self::$Chinese_character['zh'] = trim(str_replace(PHP_EOL, '', file_get_contents(__DIR__ . '/../windIndexCore/Chinese_character/Chinese_character.txt')));
+            if (!isset($this->Chinese_character['zh'])) {
+                $this->Chinese_character['zh'] = trim(str_replace(PHP_EOL, '', file_get_contents(__DIR__ . '/../windIndexCore/Chinese_character/Chinese_character.txt')));
             }
 
             $connector = '';
         } else if ($type == 'en') {
-            if (!isset(self::$Chinese_character['en'])) {
-                self::$Chinese_character['en'] = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            if (!isset($this->Chinese_character['en'])) {
+                $this->Chinese_character['en'] = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
             }
             $connector = '';
         } else {
-            if (!isset(self::$Chinese_character['zh'])) {
-                self::$Chinese_character['zh'] = trim(str_replace(PHP_EOL, '', file_get_contents(__DIR__ . '/../windIndexCore/Chinese_character/Chinese_character.txt')));
+            if (!isset($this->Chinese_character['zh'])) {
+                $this->Chinese_character['zh'] = trim(str_replace(PHP_EOL, '', file_get_contents(__DIR__ . '/../windIndexCore/Chinese_character/Chinese_character.txt')));
             }
 
             $connector = '';
         }
 
-        $len = mb_strlen(self::$Chinese_character[$type]);
+        $len = mb_strlen($this->Chinese_character[$type]);
         $text = '';
         for ($i = 0; $i < $length; $i++) {
-            $text .= mb_substr(self::$Chinese_character[$type], rand(0, $len - 1), 1);
+            $text .= mb_substr($this->Chinese_character[$type], rand(0, $len - 1), 1);
         }
         $res = '';
         while (strlen($text) > 0) {
@@ -170,7 +199,7 @@ class Faker
     }
 
     // 生成随机uuid
-    public static function uuid()
+    public function uuid()
     {
 
         //根据当前时间（微秒计）生成唯一id
@@ -184,7 +213,7 @@ class Faker
     }
 
     // 生成随机日期
-    public static function date($start = '1970-01-01', $end = '')
+    public function date($start = '1970-01-01', $end = '')
     {
         // 定义起始日期和结束日期
         $startDate = $start;
@@ -204,7 +233,7 @@ class Faker
     }
 
 
-    private static function getRandomHexColor($includeAlpha = false)
+    private function getRandomHexColor($includeAlpha = false)
     {
         $hex = '#';
         if ($includeAlpha) {
@@ -221,17 +250,17 @@ class Faker
         return $hex;
     }
 
-    private static function getRandomRGBColor()
+    private function getRandomRGBColor()
     {
         return sprintf('rgb(%d, %d, %d)', rand(0, 255), rand(0, 255), rand(0, 255));
     }
 
-    private static function getRandomRGBAColor()
+    private function getRandomRGBAColor()
     {
         $alpha = rand(0, 100) / 100.0; // 生成0到1之间的浮点数
         return sprintf('rgba(%d, %d, %d, %.2f)', rand(0, 255), rand(0, 255), rand(0, 255), $alpha);
     }
-    private static function getRandomHSLColor()
+    private function getRandomHSLColor()
     {
         $hue = rand(0, 360);         // 色调：0到360度
         $saturation = rand(0, 100);  // 饱和度：0%到100%
@@ -239,7 +268,7 @@ class Faker
         return sprintf('hsl(%d, %d, %d)', $hue, $saturation, $lightness);
     }
     // 生成随机颜色值
-    public static function color($type = 'hex')
+    public function color($type = 'hex')
     {
 
         if ($type == 'hex') {
@@ -256,7 +285,7 @@ class Faker
     }
 
     // 生成随机工号
-    public static function employeeID($length = 10, $prefix = '')
+    public function employeeID($length = 10, $prefix = '')
     {
 
         $len = $length - mb_strlen($prefix);
@@ -282,14 +311,14 @@ class Faker
     }
 
 
-    private static function generateRandomIPv4()
+    private function generateRandomIPv4()
     {
         return implode('.', array_map(function () {
             return rand(0, 255);
         }, range(1, 4)));
     }
 
-    private static function generateRandomIPv6()
+    private function generateRandomIPv6()
     {
         $hexChars = '0123456789abcdef';
         $ipv6 = [];
@@ -304,7 +333,7 @@ class Faker
     }
 
     // 生成随机ip
-    public static function ip($type = 'ipv4')
+    public function ip($type = 'ipv4')
     {
         if ($type == 'ipv4') {
             return self::generateRandomIPv4();
@@ -317,7 +346,7 @@ class Faker
 
 
     // 生成随机用户名
-    public static function userName($type = 'zh', $length = 6)
+    public function userName($type = 'zh', $length = 6)
     {
         $rep = [
             ' ' => '',
@@ -327,7 +356,7 @@ class Faker
     }
 
     // 生成随机公司名称
-    public static function companyName()
+    public function companyName()
     {
         // 定义地点
         $locations = [

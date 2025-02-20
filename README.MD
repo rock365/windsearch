@@ -67,48 +67,51 @@ require_once 'yourdirname/windsearch/vendor/autoload.php';
 *开始生成*
 
 ```php
+// 创建一个Faker对象
+$faker = \WindSearch\Core\Faker::create();
+
 // 随机生成电子邮件
-$email = \WindSearch\Core\Faker::email(); // 6099607970@i.com
+$email = $faker->email(); // 6099607970@i.com
 
 // 随机生成中文地址（无逻辑）
-$address = \WindSearch\Core\Faker::address(); // 窖坦省 躁袱市 急陕县 胳披镇 饮藤村 北翌组 859号
+$address = $faker->address(); // 窖坦省 躁袱市 急陕县 胳披镇 饮藤村 北翌组 859号
 
 // 随机生成布尔值
-$boolean = \WindSearch\Core\Faker::boolean(); // false
+$boolean = $faker->boolean(); // false
 
 // 随机生成固长度的文本
 // 第一个参数支持 zh：中文（无逻辑） en：数字字母，第二个参数代表生成字符长度
-$text = \WindSearch\Core\Faker::text('zh',50); // 猖往罢叫阳丹沦颠藉毡
+$text = $faker->text('zh', 50); // 猖往罢叫阳丹沦颠藉毡
 
 // 随机生成固定长度的数字字符串
-$number = \WindSearch\Core\Faker::number(20); // 35366395389404570072
+$number = $faker->number(20); // 35366395389404570072
 
 // 随机生成中国手机号
-$phoneNumber = \WindSearch\Core\Faker::phoneNumber(); // 
+$phoneNumber = $faker->phoneNumber(); // 
 
 // 随机生成中文人名
-$name = \WindSearch\Core\Faker::name();// 刘爱霞
+$name = $faker->name(); // 刘爱霞
 
 // 随机生成uuid
-$uuid = \WindSearch\Core\Faker::uuid(); // 96BE006D-366E-D78A-035D-159205B97B0B
+$uuid = $faker->uuid(); // 96BE006D-366E-D78A-035D-159205B97B0B
 
 // 随机生成date日期 支持指定起始、结束日期，例如 '2024-01-01','2025-01-01'
-$date = \WindSearch\Core\Faker::date(); // 2024-08-20
+$date = $faker->date(); // 2024-08-20
 
 // 随机生成颜色值 参数支持：hex rgb rgba hsl
-$color = \WindSearch\Core\Faker::color(); // #36a847
+$color = $faker->color(); // #36a847
 
 // 随机生成工号 第一个参数代表总的长度，第二个参数代表前缀，默认生成随机数字
-$employeeID = \WindSearch\Core\Faker::employeeID(10,'1101'); // 1101911597
+$employeeID = $faker->employeeID(10, '1101'); // 1101911597
 
 // 随机生成ip地址 参数支持 'ipv4'或'ipv6'，默认'ipv4'
-$ip = \WindSearch\Core\Faker::ip(); // 235.13.245.196
+$ip = $faker->ip(); // 235.13.245.196
 
 // 随机生成用户名 参数支持zh：中文，en：数字字母
-$userName = \WindSearch\Core\Faker::userName('zh'); // 
+$userName = $faker->userName('zh'); // 
 
 // 随机生成中文公司名称
-$companyName = \WindSearch\Core\Faker::companyName(); // 兰州汽车控股有限公司
+$companyName = $faker->companyName(); // 兰州汽车控股有限公司
 ```
 
 
