@@ -4,7 +4,12 @@
 
 [![AGPL License](https://img.shields.io/github/license/rock365/windsearch)](LICENSE) [![GitHub Stars](https://img.shields.io/github/stars/rock365/windsearch?style=social)](https://github.com/rock365/windsearch)
 
+🚀 **一行代码开启极速搜索体验！**
 
+```php
+// 将WindSearch代码下载到本地，再像下面这样引入文件
+require_once 'yourdirname/windsearch/vendor/autoload.php';
+```
 
 👏 **功能新增**
 
