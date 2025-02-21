@@ -17,10 +17,19 @@
 
 🚀 **一行代码开启极速搜索体验！**
 
-```php
-// 将WindSearch代码下载到本地，再像下面这样引入文件
-require_once 'yourdirname/windsearch/vendor/autoload.php';
+使用composer安装：
+
+```bash
+composer require rock365/windsearch
 ```
+
+或 使用Git安装：
+
+```bash
+git clone git@github.com:rock365/windsearch.git
+```
+
+或 直接github下载。
 
 
 
@@ -105,16 +114,14 @@ aggs 聚合查询：分组聚合、指标聚合、分组嵌套聚合；
 
 
 
-*下载引入：*
+*引入入口文件：*
 
-将WindSearch下载到本地你喜欢的文件夹，这是一个纯PHP的全文检索引擎
-
-再引入入口文件，注意具体文件路径
+WindSearch安装完成后，引入入口文件，注意具体文件路径
 
 ```php
 require_once 'yourdirname/vendor/autoload.php';
 ```
-至此，安装已经全部完成，再无其它任何配置，快不快？
+至此，安装已经全部完成，再无其它任何配置。
 
 
 
