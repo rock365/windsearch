@@ -29,7 +29,7 @@ composer require rock365/windsearch
 git clone git@github.com:rock365/windsearch.git
 ```
 
-或 直接github下载。
+或 直接在github下载。
 
 
 
