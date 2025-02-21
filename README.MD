@@ -155,7 +155,7 @@ $mapping = [
 
         [
             'name' => 'descr',
-			'type' => 'text',
+            'type' => 'text',
         ],
 
     ]

@@ -1,5 +1,8 @@
 {
-    "name": "administrator/wind-search-engine-enterprise",
+    "name": "rock365/windsearch",
+    "description": "WindSearch是一个基于中文分词，由纯PHP开发全文检索引擎，可快速搭建PHP站点的站内搜索，他没有任何繁琐的安装配置、不需要维护调优、不占用服务器内存、可与PHP项目完美融合在一起。",
+    "type": "library",
+    "license": "AGPL-3.0-or-later",
     "autoload": {
         "psr-4": {
             "WindSearch\\Index\\": "src/",
@@ -8,5 +11,12 @@
             "WindSearch\\Exceptions\\": "src/Exceptions/"
         }
     },
-    "require": {}
+    "authors": [
+        {
+            "name": "rock365"
+        }
+    ],
+    "require": {
+        "php": ">=7.3"
+    }
 }
