@@ -5,15 +5,18 @@ namespace WindSearch\Core;
 use WindSearch\Exceptions\WindException;
 
 
-final class Geohash
+class Geohash
 {
-    private const base32 = '0123456789bcdefghjkmnpqrstuvwxyz';
+    private static $base32 = '0123456789bcdefghjkmnpqrstuvwxyz';
 
     /**
      * 经纬度编码
      */
-    public static function encode(float $lat, float $lon, ?int $precision = null): string
+    public static function encode($lat, $lon, $precision = null)
     {
+        $lat = (float)$lat;
+        $lon = (float)$lon;
+
         $latMin = -90.0;
         $latMax = 90.0;
         $lonMin = -180.0;
@@ -55,7 +58,7 @@ final class Geohash
                     return $hash;
                 }
 
-                $precision = 12; // Set to maximum
+                $precision = 12; // 精度
             }
         }
 
@@ -95,7 +98,7 @@ final class Geohash
 
             if (++$bit === 5) {
                 // 每5位，生成一个字符
-                $geohash .= self::base32[$idx];
+                $geohash .= self::$base32[$idx];
                 // geohash字符串长度加1
                 $geohashLength++;
                 $bit = 0;
@@ -153,7 +156,7 @@ final class Geohash
 
             if (++$bit === 5) {
                 // 每5位，生成一个字符
-                $geohash .= self::base32[$idx];
+                $geohash .= self::$base32[$idx];
 
                 // geohash字符串长度加1
                 $geohashLength++;
@@ -165,12 +168,8 @@ final class Geohash
         return $geohash;
     }
 
-    /**
-     * @param string $geohash
-     *
-     * @return array{lat: float, lon: float}
-     */
-    public static function decode(string $geohash): array
+
+    public static function decode($geohash)
     {
         $bounds = self::bounds($geohash);
 
@@ -196,13 +195,8 @@ final class Geohash
         ];
     }
 
-    /**
-     * @return array{
-     *     sw: array{lat: float, lon: float},
-     *     ne: array{lat: float, lon: float}
-     * }
-     */
-    public static function bounds(string $geohash): array
+
+    public static function bounds($geohash)
     {
         $geohash = strtolower($geohash);
 
@@ -216,7 +210,7 @@ final class Geohash
 
         for ($i = 0; $i < $geohashLength; $i++) {
             $char = $geohash[$i];
-            $idx = strpos(self::base32, $char);
+            $idx = strpos(self::$base32, $char);
 
             for ($n = 4; $n >= 0; $n--) {
                 $bitN = $idx >> $n & 1;
@@ -250,7 +244,7 @@ final class Geohash
         ];
     }
 
-    public static function adjacent(string $geohash, string $direction): string
+    public static function adjacent($geohash, $direction)
     {
         $geohash = strtolower($geohash);
         $direction = strtolower($direction);
@@ -279,23 +273,11 @@ final class Geohash
             $parent = self::adjacent($parent, $direction);
         }
 
-        return $parent . self::base32[strpos($neighbor[$direction][$type], $lastChar)];
+        return $parent . self::$base32[strpos($neighbor[$direction][$type], $lastChar)];
     }
 
-    /**
-     * @param string $geohash
-     * @return array{
-     *     n: string,
-     *     ne: string,
-     *     e: string,
-     *     se: string,
-     *     s: string,
-     *     sw: string,
-     *     w: string,
-     *     nw: string,
-     * }
-     */
-    public static function neighbors(string $geohash): array
+
+    public static function neighbors($geohash)
     {
         $n = self::adjacent($geohash, 'n');
         $s = self::adjacent($geohash, 's');
@@ -315,7 +297,7 @@ final class Geohash
     /**
      * 返回小数位的长度
      */
-    private static function numberOfDecimals(float $value): int
+    private static function numberOfDecimals($value)
     {
         // 保留14位小数 位数四舍五入
         $string = number_format($value, 14);
@@ -370,110 +352,114 @@ final class Geohash
 
 
 
-/************************************判断多边形相交*************************************** */
+    /************************************判断多边形相交*************************************** */
 
-/**
- * 判断线段是否与多边形相交
- *
- * @param array $polygon 多边形顶点数组，每个顶点是一个包含纬度和经度的数组
- * @param array $line 线段的两个端点，每个端点是一个包含纬度和经度的数组
- * @return bool 是否相交
- */
-private static function doLineIntersectPolygon($polygon, $line) {
-    $numVertices = count($polygon);
-    for ($i = 0, $j = $numVertices - 1; $i < $numVertices; $j = $i++) {
-        if (self::doLineIntersectLine($polygon[$i], $polygon[$j], $line[0], $line[1])) {
+    /**
+     * 判断线段是否与多边形相交
+     *
+     * @param array $polygon 多边形顶点数组，每个顶点是一个包含纬度和经度的数组
+     * @param array $line 线段的两个端点，每个端点是一个包含纬度和经度的数组
+     * @return bool 是否相交
+     */
+    private static function doLineIntersectPolygon($polygon, $line)
+    {
+        $numVertices = count($polygon);
+        for ($i = 0, $j = $numVertices - 1; $i < $numVertices; $j = $i++) {
+            if (self::doLineIntersectLine($polygon[$i], $polygon[$j], $line[0], $line[1])) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 判断两条线段是否相交
+     *
+     * @param array $p1 线段1的第一个端点（纬度，经度）
+     * @param array $p2 线段1的第二个端点（纬度，经度）
+     * @param array $p3 线段2的第一个端点（纬度，经度）
+     * @param array $p4 线段2的第二个端点（纬度，经度）
+     * @return bool 是否相交
+     */
+    private static function doLineIntersectLine($p1, $p2, $p3, $p4)
+    {
+        // 计算方向
+        $o1 = self::orientation($p1, $p2, $p3);
+        $o2 = self::orientation($p1, $p2, $p4);
+        $o3 = self::orientation($p3, $p4, $p1);
+        $o4 = self::orientation($p3, $p4, $p2);
+
+        // 一般情况
+        if ($o1 != $o2 && $o3 != $o4) {
             return true;
         }
-    }
-    return false;
-}
 
-/**
- * 判断两条线段是否相交
- *
- * @param array $p1 线段1的第一个端点（纬度，经度）
- * @param array $p2 线段1的第二个端点（纬度，经度）
- * @param array $p3 线段2的第一个端点（纬度，经度）
- * @param array $p4 线段2的第二个端点（纬度，经度）
- * @return bool 是否相交
- */
-private static function doLineIntersectLine($p1, $p2, $p3, $p4) {
-    // 计算方向
-    $o1 = self::orientation($p1, $p2, $p3);
-    $o2 = self::orientation($p1, $p2, $p4);
-    $o3 = self::orientation($p3, $p4, $p1);
-    $o4 = self::orientation($p3, $p4, $p2);
+        // 特殊情况：共线但不相交
+        if ($o1 == 0 && self::onSegment($p1, $p3, $p2)) return true;
+        if ($o2 == 0 && self::onSegment($p1, $p4, $p2)) return true;
+        if ($o3 == 0 && self::onSegment($p3, $p1, $p4)) return true;
+        if ($o4 == 0 && self::onSegment($p3, $p2, $p4)) return true;
 
-    // 一般情况
-    if ($o1 != $o2 && $o3 != $o4) {
-        return true;
+        return false;
     }
 
-    // 特殊情况：共线但不相交
-    if ($o1 == 0 && self::onSegment($p1, $p3, $p2)) return true;
-    if ($o2 == 0 && self::onSegment($p1, $p4, $p2)) return true;
-    if ($o3 == 0 && self::onSegment($p3, $p1, $p4)) return true;
-    if ($o4 == 0 && self::onSegment($p3, $p2, $p4)) return true;
+    /**
+     * 计算三点的方向
+     *
+     * @param array $p 起点（纬度，经度）
+     * @param array $q 中间点（纬度，经度）
+     * @param array $r 终点（纬度，经度）
+     * @return int 方向：0表示共线，-1表示顺时针，1表示逆时针
+     */
+    private static function orientation($p, $q, $r)
+    {
+        $val = ($q[0] - $p[0]) * ($r[1] - $q[1]) - ($q[1] - $p[1]) * ($r[0] - $q[0]);
+        if ($val == 0) return 0; // 共线
+        return ($val > 0) ? 1 : 2; // 顺时针或逆时针，这里简化为1和2，实际代码中可以用-1和1表示
+    }
 
-    return false;
-}
+    /**
+     * 判断点是否在线段上
+     *
+     * @param array $p 线段的起点
+     * @param array $q 线段的终点
+     * @param array $r 待判断的点
+     * @return bool 是否在线段上
+     */
+    private static function onSegment($p, $q, $r)
+    {
+        return $q[0] >= min($p[0], $r[0]) && $q[0] <= max($p[0], $r[0]) &&
+            $q[1] >= min($p[1], $r[1]) && $q[1] <= max($p[1], $r[1]);
+    }
 
-/**
- * 计算三点的方向
- *
- * @param array $p 起点（纬度，经度）
- * @param array $q 中间点（纬度，经度）
- * @param array $r 终点（纬度，经度）
- * @return int 方向：0表示共线，-1表示顺时针，1表示逆时针
- */
-private static function orientation($p, $q, $r) {
-    $val = ($q[0] - $p[0]) * ($r[1] - $q[1]) - ($q[1] - $p[1]) * ($r[0] - $q[0]);
-    if ($val == 0) return 0; // 共线
-    return ($val > 0) ? 1 : 2; // 顺时针或逆时针，这里简化为1和2，实际代码中可以用-1和1表示
-}
-
-/**
- * 判断点是否在线段上
- *
- * @param array $p 线段的起点
- * @param array $q 线段的终点
- * @param array $r 待判断的点
- * @return bool 是否在线段上
- */
-private static function onSegment($p, $q, $r) {
-    return $q[0] >= min($p[0], $r[0]) && $q[0] <= max($p[0], $r[0]) &&
-           $q[1] >= min($p[1], $r[1]) && $q[1] <= max($p[1], $r[1]);
-}
-
-/**
- * 判断两个多边形是否存在相交
- *
- * @param array $polygon1 第一个多边形的顶点数组
- * @param array $polygon2 第二个多边形的顶点数组
- * @return bool 是否相交
- */
-public static function doPolygonsIntersect($polygon1, $polygon2) {
-    // 检查polygon1的每条边是否与polygon2相交
-    $numEdges1 = count($polygon1);
-    for ($i = 0; $i < $numEdges1; $i++) {
-        $edge = [$polygon1[$i], $polygon1[($i + 1) % $numEdges1]];
-        if (self::doLineIntersectPolygon($polygon2, $edge)) {
-            return true;
+    /**
+     * 判断两个多边形是否存在相交
+     *
+     * @param array $polygon1 第一个多边形的顶点数组
+     * @param array $polygon2 第二个多边形的顶点数组
+     * @return bool 是否相交
+     */
+    public static function doPolygonsIntersect($polygon1, $polygon2)
+    {
+        // 检查polygon1的每条边是否与polygon2相交
+        $numEdges1 = count($polygon1);
+        for ($i = 0; $i < $numEdges1; $i++) {
+            $edge = [$polygon1[$i], $polygon1[($i + 1) % $numEdges1]];
+            if (self::doLineIntersectPolygon($polygon2, $edge)) {
+                return true;
+            }
         }
+
+        // 检查polygon2的每条边是否与polygon1相交（理论上这一步是多余的，因为相交是对称的，但为了代码的清晰性还是加上）
+        // 在实际应用中，可以根据需要省略这一步
+        $numEdges2 = count($polygon2);
+        for ($i = 0; $i < $numEdges2; $i++) {
+            $edge = [$polygon2[$i], $polygon2[($i + 1) % $numEdges2]];
+            // 注意：这里实际上不需要再次检查与polygon1的相交，因为上面的循环已经做过了
+            // 这里只是为了展示如何遍历polygon2的边，实际代码中应该省略这个循环或将其注释掉
+        }
+
+        // 如果没有发现相交，则返回false
+        return false;
     }
-
-    // 检查polygon2的每条边是否与polygon1相交（理论上这一步是多余的，因为相交是对称的，但为了代码的清晰性还是加上）
-    // 在实际应用中，可以根据需要省略这一步
-    $numEdges2 = count($polygon2);
-    for ($i = 0; $i < $numEdges2; $i++) {
-        $edge = [$polygon2[$i], $polygon2[($i + 1) % $numEdges2]];
-        // 注意：这里实际上不需要再次检查与polygon1的相交，因为上面的循环已经做过了
-        // 这里只是为了展示如何遍历polygon2的边，实际代码中应该省略这个循环或将其注释掉
-    }
-
-    // 如果没有发现相交，则返回false
-    return false;
-}
-
 }
