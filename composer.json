@@ -16,6 +16,7 @@
             "name": "rock365"
         }
     ],
+    "minimum-stability": "dev",
     "require": {
         "php": ">=7.3"
     }
