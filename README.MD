@@ -10,8 +10,8 @@
 
 2.0版本新增：
 
-- [即用模式](https://github.com/rock365/windsearch/blob/main/CHANGELOG.MD)
-- [Faker数据生成](https://github.com/rock365/windsearch/blob/main/CHANGELOG.MD)
+- [即用模式](https://github.com/rock365/windsearch/blob/main/CHANGELOG.md)
+- [Faker数据生成](https://github.com/rock365/windsearch/blob/main/CHANGELOG.md)
 
 
 
