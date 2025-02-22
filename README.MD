@@ -64,7 +64,7 @@ git clone git@github.com:rock365/windsearch.git
 
 
 
-🚀 **快速使用**
+🚀 **快速使用（配合[文档](https://rock365.github.io/)使用更佳）**
 
 *环境要求：*
 
