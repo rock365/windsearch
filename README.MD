@@ -12,7 +12,7 @@
 
 - [即用模式](https://github.com/rock365/windsearch/blob/main/CHANGELOG.md)
 - [Faker数据生成](https://github.com/rock365/windsearch/blob/main/CHANGELOG.md)
-- [日期格式化](https://github.com/rock365/windsearch/blob/main/CHANGELOG.md)
+- [日期格式化](https://github.com/rock365/windsearch/blob/main/CHANGELOG.md)（最新开发版）
 
 
 
