@@ -7470,9 +7470,9 @@ class Wind extends Func
                 'operator' => $operator,
                 'minimum_should_match' => $minimum_should_match,
             ];
-            $fieldType= $this->getFieldType($fd);
-            if(($fieldType!=='keyword') && ($fieldType!=='text')){
-                $this->throwWindException($fd . ' 字段类型为'.$fieldType.',不支持搜索', 0);
+            $fieldType = $this->getFieldType($fd);
+            if (($fieldType !== 'keyword') && ($fieldType !== 'text')) {
+                $this->throwWindException($fd . ' 字段类型为' . $fieldType . ',不支持搜索', 0);
             }
             if ($this->primarykeyType == 'Int_Incremental') {
                 $isKeyWordField = $this->isKeyWordField($fd);
@@ -10723,7 +10723,7 @@ class Wind extends Func
         $this->queryList = $queryList;
         $mode = $queryList['mode'];
 
-        
+
         if ($mode == 'match' || $mode == 'match_terms' || $mode == 'match_phrase' || $mode == 'match_prefix' || $mode == 'match_suffix' || $mode == 'match_prefix_suffix' || $mode == 'match_fuzzy') {
             if ($mode == 'match_prefix') {
                 return $this->match_prefix($queryList);
@@ -12079,6 +12079,7 @@ class Wind extends Func
             $queryList['filter'] = isset($query['match']['filter']) ? $query['match']['filter'] : [];
             $queryList['highlight'] = isset($query['match']['field']['highlight']) ? $query['match']['field']['highlight'] : false;
             $queryList['desensitization'] = isset($query['match']['desensitization']) ? $query['match']['desensitization'] : false;
+            $queryList['formatter'] = isset($query['match']['formatter']) ? $query['match']['formatter'] : [];
             $queryList['_source'] = isset($query['match']['_source']) ? $query['match']['_source'] : [];
             $queryList['analyzer'] = isset($query['match']['field']['analyzer']) ? $query['match']['field']['analyzer'] : '';
             $queryList['synonym'] = isset($query['match']['field']['synonym']) ? $query['match']['field']['synonym'] : false;
@@ -12099,6 +12100,7 @@ class Wind extends Func
                 $queryList['order'] = 'asc';
             }
             $queryList['desensitization'] = isset($query['match_all']['desensitization']) ? $query['match_all']['desensitization'] : false;
+            $queryList['formatter'] = isset($query['match_all']['formatter']) ? $query['match_all']['formatter'] : [];
             $queryList['page'] = ((int)$query['match_all']['page'] > 0) ? ceil((int)$query['match_all']['page']) : 1;
             $queryList['list_rows'] = $query['match_all']['list_rows'];
             $queryList['_source'] = isset($query['match_all']['_source']) ? $query['match_all']['_source'] : [];
@@ -12108,6 +12110,7 @@ class Wind extends Func
             $queryList['highlight'] = [];
             $queryList['_source'] = isset($query['match_range']['_source']) ? $query['match_range']['_source'] : [];
             $queryList['desensitization'] = isset($query['match_range']['desensitization']) ? $query['match_range']['desensitization'] : false;
+            $queryList['formatter'] = isset($query['match_range']['formatter']) ? $query['match_range']['formatter'] : [];
             $queryList['sort'] = isset($query['match_range']['sort']) ? $query['match_range']['sort'] : [];
             $queryList['page'] = ((int)$query['match_range']['page'] > 0) ? ceil((int)$query['match_range']['page']) : 1;
             $queryList['list_rows'] = $query['match_range']['list_rows'];
@@ -12118,6 +12121,7 @@ class Wind extends Func
             $queryList['highlight'] = isset($query['match_terms']['field']['highlight']) ? $query['match_terms']['field']['highlight'] : false;
             $queryList['_source'] = isset($query['match_terms']['_source']) ? $query['match_terms']['_source'] : [];
             $queryList['desensitization'] = isset($query['match_terms']['desensitization']) ? $query['match_terms']['desensitization'] : false;
+            $queryList['formatter'] = isset($query['match_terms']['formatter']) ? $query['match_terms']['formatter'] : [];
             $queryList['operator'] = isset($query['match_terms']['operator']) ? $query['match_terms']['operator'] : 'or';
             if ($queryList['operator'] != 'and' && $queryList['operator'] != 'or') {
                 $queryList['operator'] = 'or';
@@ -12133,6 +12137,7 @@ class Wind extends Func
             $queryList['highlight'] = $query['match_prefix']['field']['highlight'];
             $queryList['_source'] = isset($query['match_prefix']['_source']) ? $query['match_prefix']['_source'] : [];
             $queryList['desensitization'] = isset($query['match_prefix']['desensitization']) ? $query['match_prefix']['desensitization'] : false;
+            $queryList['formatter'] = isset($query['match_prefix']['formatter']) ? $query['match_prefix']['formatter'] : [];
             $queryList['sort'] = isset($query['match_prefix']['sort']) ? $query['match_prefix']['sort'] : [];
             $queryList['page'] = ((int)$query['match_prefix']['page'] > 0) ? ceil((int)$query['match_prefix']['page']) : 1;
             $queryList['list_rows'] = $query['match_prefix']['list_rows'];
@@ -12144,6 +12149,7 @@ class Wind extends Func
             $queryList['highlight'] = $query['match_suffix']['field']['highlight'];
             $queryList['_source'] = isset($query['match_suffix']['_source']) ? $query['match_suffix']['_source'] : [];
             $queryList['desensitization'] = isset($query['match_suffix']['desensitization']) ? $query['match_suffix']['desensitization'] : false;
+            $queryList['formatter'] = isset($query['match_suffix']['formatter']) ? $query['match_suffix']['formatter'] : [];
             $queryList['sort'] = isset($query['match_suffix']['sort']) ? $query['match_suffix']['sort'] : [];
             $queryList['page'] = ((int)$query['match_suffix']['page'] > 0) ? ceil((int)$query['match_suffix']['page']) : 1;
             $queryList['list_rows'] = $query['match_suffix']['list_rows'];
@@ -12155,6 +12161,7 @@ class Wind extends Func
             $queryList['highlight'] = $query['match_prefix_suffix']['field']['highlight'];
             $queryList['_source'] = isset($query['match_prefix_suffix']['_source']) ? $query['match_prefix_suffix']['_source'] : [];
             $queryList['desensitization'] = isset($query['match_prefix_suffix']['desensitization']) ? $query['match_prefix_suffix']['desensitization'] : false;
+            $queryList['formatter'] = isset($query['match']['format_prefix_suffix']) ? $query['match_prefix_suffix']['formatter'] : [];
             $queryList['sort'] = isset($query['match_prefix_suffix']['sort']) ? $query['match_prefix_suffix']['sort'] : [];
             $queryList['page'] = ((int)$query['match_prefix_suffix']['page'] > 0) ? ceil((int)$query['match_prefix_suffix']['page']) : 1;
             $queryList['list_rows'] = $query['match_prefix_suffix']['list_rows'];
@@ -12164,6 +12171,7 @@ class Wind extends Func
             $queryList['filter'] = isset($query['multi_match']['filter']) ? $query['multi_match']['filter'] : [];
             $queryList['_source'] = isset($query['multi_match']['_source']) ? $query['multi_match']['_source'] : [];
             $queryList['desensitization'] = isset($query['multi_match']['desensitization']) ? $query['multi_match']['desensitization'] : false;
+            $queryList['formatter'] = isset($query['multi_match']['formatter']) ? $query['multi_match']['formatter'] : [];
             $queryList['field_operator'] = isset($query['multi_match']['field_operator']) ? $query['multi_match']['field_operator'] : 'or';
             $queryList['sort'] = isset($query['multi_match']['sort']) ? $query['multi_match']['sort'] : [];
             $queryList['page'] = ((int)$query['multi_match']['page'] > 0) ? ceil((int)$query['multi_match']['page']) : 1;
@@ -12175,6 +12183,7 @@ class Wind extends Func
             $queryList['highlight'] = $query['match_phrase']['field']['highlight'];
             $queryList['_source'] = isset($query['match_phrase']['_source']) ? $query['match_phrase']['_source'] : [];
             $queryList['desensitization'] = isset($query['match_phrase']['desensitization']) ? $query['match_phrase']['desensitization'] : false;
+            $queryList['formatter'] = isset($query['match_phrase']['formatter']) ? $query['match_phrase']['formatter'] : [];
             $queryList['analyzer'] = isset($query['match_phrase']['field']['analyzer']) ? $query['match_phrase']['field']['analyzer'] : '';
             $queryList['operator'] = 'and';
             $queryList['sort'] = isset($query['match_phrase']['sort']) ? $query['match_phrase']['sort'] : [];
@@ -12187,6 +12196,7 @@ class Wind extends Func
             $queryList['highlight'] = $query['match_bool']['highlight'];
             $queryList['_source'] = isset($query['match_bool']['_source']) ? $query['match_bool']['_source'] : [];
             $queryList['desensitization'] = isset($query['match_bool']['desensitization']) ? $query['match_bool']['desensitization'] : false;
+            $queryList['formatter'] = isset($query['match_bool']['formatter']) ? $query['match_bool']['formatter'] : [];
             $queryList['sort'] = isset($query['match_bool']['sort']) ? $query['match_bool']['sort'] : [];
             $queryList['page'] = ((int)$query['match_bool']['page'] > 0) ? ceil((int)$query['match_bool']['page']) : 1;
             $queryList['list_rows'] = $query['match_bool']['list_rows'];
@@ -12195,11 +12205,13 @@ class Wind extends Func
             $queryList['primarykey'] = isset($query['match_primarykey']['primarykey']) ? $query['match_primarykey']['primarykey'] : [];
             $queryList['_source'] = isset($query['match_primarykey']['_source']) ? $query['match_primarykey']['_source'] : [];
             $queryList['desensitization'] = isset($query['match_primarykey']['desensitization']) ? $query['match_primarykey']['desensitization'] : false;
+            $queryList['formatter'] = isset($query['match_primarykey']['formatter']) ? $query['match_primarykey']['formatter'] : [];
         } else if (isset($query['match_rand'])) {
             $queryList['mode'] = 'match_rand';
             $queryList['size'] = ((int)$query['match_rand']['size'] > 0) ? ceil((int)$query['match_rand']['size']) : 0;
             $queryList['_source'] = isset($query['match_rand']['_source']) ? $query['match_rand']['_source'] : [];
             $queryList['desensitization'] = isset($query['match_rand']['desensitization']) ? $query['match_rand']['desensitization'] : false;
+            $queryList['formatter'] = isset($query['match_rand']['formatter']) ? $query['match_rand']['formatter'] : [];
         } else if (isset($query['match_fuzzy'])) {
             $queryList['mode'] = 'match_fuzzy';
             $queryList['field'] = $query['match_fuzzy']['field']['name'];
@@ -12207,6 +12219,7 @@ class Wind extends Func
             $queryList['filter'] = isset($query['match_fuzzy']['filter']) ? $query['match_fuzzy']['filter'] : [];
             $queryList['highlight'] = isset($query['match_fuzzy']['field']['highlight']) ? $query['match_fuzzy']['field']['highlight'] : false;
             $queryList['desensitization'] = isset($query['match_fuzzy']['desensitization']) ? $query['match_fuzzy']['desensitization'] : false;
+            $queryList['formatter'] = isset($query['match_fuzzy']['formatter']) ? $query['match_fuzzy']['formatter'] : [];
             $queryList['_source'] = isset($query['match_fuzzy']['_source']) ? $query['match_fuzzy']['_source'] : [];
             $queryList['analyzer'] = isset($query['match_fuzzy']['field']['analyzer']) ? $query['match_fuzzy']['field']['analyzer'] : '';
             $queryList['synonym'] = isset($query['match_fuzzy']['field']['synonym']) ? $query['match_fuzzy']['field']['synonym'] : false;
@@ -12500,6 +12513,21 @@ class Wind extends Func
             $resList = $this->getDataByIds($idStr);
         }
         $resList = $this->filterSource($resList, $queryList['_source']);
+
+        if (is_array($queryList['formatter']) && !empty($queryList['formatter'])) {
+            foreach ($resList as $k => $v) {
+                foreach ($queryList['formatter'] as $fd => $fm) {
+                    $type = $fm['type'];
+                    $format = $fm['format'];
+                    if ($type === 'date') {
+                        if (isset($v[$fd])) {
+                            $resList[$k][$fd] = date($format, $v[$fd]);
+                        }
+                    }
+                }
+            }
+        }
+
         $desens = isset($queryList['desensitization']) ? $queryList['desensitization'] : [];
         $resList = $this->desensitization($resList, $desens);
         if ($queryList['mode'] == 'match_all') {
@@ -12648,6 +12676,7 @@ class Wind extends Func
         if ($sort != 'asc' && $sort != 'desc') {
             $sort = 'asc';
         }
+        $format = isset($query['match_geo']['formatter']) ? $query['match_geo']['formatter'] : [];
         $source = isset($query['match_geo']['_source']) ? $query['match_geo']['_source'] : [];
         $page = ceil((int)$query['match_geo']['page']);
         $listRows = ceil((int)$query['match_geo']['list_rows']);
@@ -12888,6 +12917,22 @@ class Wind extends Func
                 $res = $resNew;
             }
             $res = $this->filterSource($res, $source);
+
+            if (is_array($format) && !empty($format)) {
+                foreach ($res as $k => $v) {
+                    foreach ($format as $fd => $fm) {
+                        $type = $fm['type'];
+                        $format = $fm['format'];
+                        if ($type === 'date') {
+                            if (isset($v[$fd])) {
+                                $res[$k][$fd] = date($format, $v[$fd]);
+                            }
+                        }
+                    }
+                }
+            }
+
+
             $result_info = [
                 'result' => [
                     '_source' => $res,

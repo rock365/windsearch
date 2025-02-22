@@ -1,6 +1,6 @@
 # WindSearch 2.0 🔍 [![PHP Version](https://img.shields.io/badge/PHP-7.3%2B-brightgreen)]()
 
-### 让中文搜索变得像呼吸一样简单（新功能开发中...）
+### 让PHP站内搜索变得像呼吸一样简单（新功能开发中...）
 
 [![AGPL License](https://img.shields.io/github/license/rock365/windsearch)](LICENSE) [![GitHub Stars](https://img.shields.io/github/stars/rock365/windsearch?style=social)](https://github.com/rock365/windsearch)
 
@@ -12,6 +12,7 @@
 
 - [即用模式](https://github.com/rock365/windsearch/blob/main/CHANGELOG.md)
 - [Faker数据生成](https://github.com/rock365/windsearch/blob/main/CHANGELOG.md)
+- [日期格式化](https://github.com/rock365/windsearch/blob/main/CHANGELOG.md)
 
 
 
@@ -33,6 +34,12 @@ git clone git@github.com:rock365/windsearch.git
 
 
 
+📖 **在线文档**
+
+[https://rock365.github.io/](https://rock365.github.io/) 偶尔不稳定，多刷新几次就行
+
+
+
 🚀 **PHP开发者苦ES久矣！**  
 
 还在为Elasticsearch的复杂配置头疼？WindSearch给您：
@@ -45,7 +52,7 @@ git clone git@github.com:rock365/windsearch.git
 
 
 
-🚀 **众多优势，不容错过！**
+🚀 **众多优势**
 
 - ✅ 比数据库LIKE快**300倍**，比ES轻量**90%**
 - ✅ 天然适配**Laravel**/**ThinkPHP**等主流框架
@@ -54,52 +61,6 @@ git clone git@github.com:rock365/windsearch.git
 - ✅ 支持实时索引、实时搜索
 - ✅ 支持搜索过滤
 - ✅ 支持int递增主键、uuid主键
-
-
-
-📖 **在线文档**
-
-[https://rock365.github.io/](https://rock365.github.io/) 偶尔无法访问，多刷新几次就行
-
-
-
-😁 **多种搜索模式:**
-
-match 单字段检索
-
-multi_match 多字段检索
-
-match_fuzzy 模糊搜索
-
-match_prefix 前缀匹配
-
-match_suffix 后缀匹配
-
-match_prefix_suffix 前后缀混合匹配
-
-match_phrase 短语搜索
-
-match_terms 精确搜索
-
-match_bool 布尔搜索(无限嵌套)
-
-match_range 范围查询
-
-match_all 查询所有数据
-
-match_rand 随机获取数据
-
-match_primarykey 根据主键查询数据
-
-match_geo 地理空间搜索
-
-match_auto_completion 自动补全
-
-aggs 聚合查询：分组聚合、指标聚合、分组嵌套聚合；
-
-搜索统计：可对前台用户的搜索数据进行保存统计，可按年、按月、按日来查看搜索词语的频率统计数据；
-
-敏感词检测：包括一键导入所有敏感词，检测字符串是否存在敏感词、检测并替换敏感词、返回所有包含的敏感词；
 
 
 
