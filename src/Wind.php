@@ -4708,9 +4708,9 @@ class Wind extends Func
             $file = $indexSegDir . $fi;
 
             if (is_file($file)) {
-                $file = fopen($file, "r");
                 $container = [];
-                while ($line = fgets($file)) {
+                $rows = $this->yield_fread_row();
+                foreach ($rows($file) as $line) {
                     $line = trim($line);
                     if ($line != '') {
                         $arr = explode(' ', $line);
@@ -4767,9 +4767,9 @@ class Wind extends Func
             $bitmapArr = [];
             $file = $indexSegDir . $fi;
             if (is_file($file)) {
-                $file = fopen($file, "r");
                 $container = [];
-                while ($line = fgets($file)) {
+                $rows = $this->yield_fread_row();
+                foreach ($rows($file) as $line) {
                     $line = trim($line);
                     if ($line != '') {
                         $arr = explode(' ', $line);
