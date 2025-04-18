@@ -548,4 +548,24 @@ class Func
 
 		return $result;
 	}
+
+
+	public function new_base64_encode($text)
+	{
+		$res = base64_encode($text);
+		$res = str_replace('+', '-', $res);
+		$res = str_replace('/', '_', $res);
+		$res = str_replace('=', '*', $res);
+		return $res;
+	}
+
+	public function new_base64_decode($text)
+	{
+		$text = str_replace('-', '+', $text);
+		$text = str_replace('_', '/', $text);
+		$text = str_replace('*', '=', $text);
+		$res = base64_decode($text);
+
+		return $res;
+	}
 }

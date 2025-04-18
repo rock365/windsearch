@@ -5356,12 +5356,12 @@ class Wind extends Func
 
     private function systemCompression($string)
     {
-        return base64_encode(gzdeflate($string));
+        return $this->new_base64_encode(gzdeflate($string));
     }
 
     private function systemDecompression($string)
     {
-        return gzinflate(base64_decode($string));
+        return gzinflate($this->new_base64_decode($string));
     }
 
     private function buildIncrementAutoCompletionIndex($field)
