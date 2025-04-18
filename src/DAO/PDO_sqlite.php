@@ -27,7 +27,7 @@ class PDO_sqlite
       // 连接数据库
       $this->_obj = new \PDO('sqlite:' . $dbname);
     } catch (\PDOException $e) {
-      $msg = 'HP的pdo_sqlite扩展未开启';
+      $msg = 'PHP的pdo_sqlite扩展未开启';
       $code = 0;
       throw new WindException($msg, $code);
     }
@@ -48,17 +48,17 @@ class PDO_sqlite
       // 创建表
       // wind_sys_id 系统自增id，强制
       // $primarykey 用户自定义的主键 非强制
-      $this->_obj->exec("CREATE TABLE IF NOT EXISTS $IndexName (
+      $res = $this->_obj->exec("CREATE TABLE IF NOT EXISTS $IndexName (
 		           wind_sys_id INTEGER PRIMARY KEY,
                $primarykey INTEGER,
 		           doc TEXT
 		           )");
-       // 对用户int主键字段创建唯一索引
-       $sql_index = "CREATE UNIQUE INDEX IF NOT EXISTS idx_" . $primarykey . " ON " . $IndexName . "($primarykey);";
-       $this->_obj->exec($sql_index);
+      // 对用户int主键字段创建唯一索引
+      $sql_index = "CREATE UNIQUE INDEX IF NOT EXISTS idx_" . $primarykey . " ON " . $IndexName . "($primarykey);";
+      $this->_obj->exec($sql_index);
     } else {
       // 创建表
-      $this->_obj->exec("CREATE TABLE IF NOT EXISTS $IndexName (
+      $res = $this->_obj->exec("CREATE TABLE IF NOT EXISTS $IndexName (
       wind_sys_id INTEGER PRIMARY KEY,
       $primarykey TEXT,
       doc TEXT
@@ -66,6 +66,12 @@ class PDO_sqlite
       // 对用户UUID主键字段创建唯一索引
       $sql_index = "CREATE UNIQUE INDEX IF NOT EXISTS idx_" . $primarykey . " ON " . $IndexName . "($primarykey);";
       $this->_obj->exec($sql_index);
+    }
+
+    if ((int)$res !== 0) {
+      $msg = 'sqlite创建基础数据表失败（请检查<自定义主键>的名称是否为系统关键字，或进行其它检查）';
+      $code = 0;
+      throw new WindException($msg, $code);
     }
   }
 
