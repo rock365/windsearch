@@ -12523,6 +12523,12 @@ class Wind extends Func
                         if (isset($v[$fd])) {
                             $resList[$k][$fd] = date($format, $v[$fd]);
                         }
+                        // chinesemoney
+                    } else if ($type === 'chinesemoney') {
+                        // numToChineseMoney
+                        if (isset($v[$fd])) {
+                            $resList[$k][$fd] = $this->numToChineseMoney($v[$fd]);
+                        }
                     }
                 }
             }

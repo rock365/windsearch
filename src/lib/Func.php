@@ -568,4 +568,76 @@ class Func
 
 		return $res;
 	}
+
+
+
+
+	public function numToChineseMoney($num)
+	{
+
+		$num = (float)$num;
+		// 验证输入是否为数字
+		if (!is_numeric($num)) {
+			return "输入不是有效的数字";
+		}
+
+		// 固定汉字
+		$cnums = ["零", "壹", "贰", "叁", "肆", "伍", "陆", "柒", "捌", "玖"];
+		$cnyUnits = ["圆", "角", "分"];
+		$intUnits = ["", "拾", "佰", "仟"];
+		$intSections = ["", "万", "亿", "万亿"];
+
+		// 将数字格式化为两位小数，并拆分为整数和小数部分
+		$num = round($num, 2); // 保留两位小数，四舍五入
+		$parts = explode('.', sprintf('%.2f', $num));
+		$intPart = $parts[0]; // 整数部分
+		$decPart = isset($parts[1]) ? $parts[1] : ''; // 小数部分
+
+		$chineseMoney = "";
+
+		// 处理整数部分
+		if ($intPart > 0) {
+			$intLen = strlen($intPart);
+			$zeroFlag = false; // 用于标记是否需要插入“零”
+			for ($i = 0; $i < $intLen; $i++) {
+				$n = $intPart[$i];
+				$p = $intLen - $i - 1; // 当前数字的位置（从右到左）
+				$unitPos = $p % 4; // 当前节内的位置
+				$sectionPos = intval($p / 4); // 当前属于第几节
+
+				if ($n == "0") {
+					$zeroFlag = true;
+				} else {
+					if ($zeroFlag) {
+						$chineseMoney .= $cnums[0]; // 补零
+						$zeroFlag = false;
+					}
+					$chineseMoney .= $cnums[$n] . $intUnits[$unitPos];
+				}
+
+				// 每节结束时添加节单位（万、亿等），但避免最后一节多余的单位
+				if ($unitPos == 0 && $sectionPos > 0) {
+					$chineseMoney .= $intSections[$sectionPos];
+				}
+			}
+			$chineseMoney .= $cnyUnits[0]; // 添加“圆”
+		} else {
+			$chineseMoney .= $cnums[0] . $cnyUnits[0]; // 零圆
+		}
+
+		// 处理小数部分
+		if ($decPart > 0) {
+			$decLen = strlen($decPart);
+			for ($i = 0; $i < $decLen; $i++) {
+				$n = $decPart[$i];
+				if ($n != "0") {
+					$chineseMoney .= $cnums[$n] . $cnyUnits[$i + 1];
+				}
+			}
+		} else {
+			$chineseMoney .= "整"; // 如果没有小数部分，添加“整”
+		}
+
+		return $chineseMoney;
+	}
 }
